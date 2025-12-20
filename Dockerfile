@@ -11,7 +11,7 @@ COPY packages/database/package*.json ./packages/database/
 COPY packages/shared/package*.json ./packages/shared/
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY . .
