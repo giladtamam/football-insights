@@ -156,6 +156,8 @@ interface ApiFixtureStats {
 }
 
 async function fetchApi<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
+  console.log(`[fetchApi] API_TOKEN configured: ${!!API_TOKEN}`);
+  
   if (!API_TOKEN) {
     throw new Error('FOOTBALL_API_TOKEN is not configured');
   }
@@ -164,6 +166,8 @@ async function fetchApi<T>(endpoint: string, params: Record<string, string> = {}
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, value);
   });
+
+  console.log(`[fetchApi] Calling: ${url.toString()}`);
 
   // Use custom fetch options for environments with certificate issues
   const fetchOptions: RequestInit & { dispatcher?: unknown } = {
@@ -185,17 +189,22 @@ async function fetchApi<T>(endpoint: string, params: Record<string, string> = {}
 
   const response = await fetch(url.toString(), fetchOptions);
 
+  console.log(`[fetchApi] Response status: ${response.status}`);
+
   if (!response.ok) {
     throw new Error(`API request failed: ${response.status} ${response.statusText}`);
   }
 
   const data: ApiResponse<T> = await response.json();
 
+  console.log(`[fetchApi] Results count: ${data.results}`);
+
   // Check for API errors
   if (data.errors && Object.keys(data.errors).length > 0) {
     const errorMsg = Array.isArray(data.errors)
       ? data.errors.join(', ')
       : Object.values(data.errors).join(', ');
+    console.error(`[fetchApi] API returned error: ${errorMsg}`);
     throw new Error(`API error: ${errorMsg}`);
   }
 
@@ -361,22 +370,35 @@ export const footballApiClient = {
   },
 
   async getStandings(leagueId: number, season: number): Promise<ApiStandingEntry[][]> {
+    console.log(`[footballApiClient.getStandings] Fetching standings for league ${leagueId}, season ${season}`);
+    
     interface StandingsResponse {
       league: {
         standings: ApiStandingEntry[][];
       };
     }
 
-    const response = await fetchApi<StandingsResponse[]>('/standings', {
-      league: leagueId.toString(),
-      season: season.toString(),
-    });
+    try {
+      const response = await fetchApi<StandingsResponse[]>('/standings', {
+        league: leagueId.toString(),
+        season: season.toString(),
+      });
 
-    if (response.length === 0) {
-      return [];
+      console.log(`[footballApiClient.getStandings] Response length: ${response?.length ?? 0}`);
+      
+      if (response.length === 0) {
+        console.log('[footballApiClient.getStandings] Empty response from API');
+        return [];
+      }
+
+      const standings = response[0].league.standings;
+      console.log(`[footballApiClient.getStandings] Found ${standings?.length ?? 0} standings groups`);
+      
+      return standings;
+    } catch (error: any) {
+      console.error(`[footballApiClient.getStandings] Error: ${error?.message || error}`);
+      throw error;
     }
-
-    return response[0].league.standings;
   },
 
   async getLiveFixtures(): Promise<Array<ApiFixture & { league: { id: number; name: string; logo: string | null; country: string } }>> {

@@ -293,39 +293,97 @@ const LiveFixtureType = builder
     }),
   });
 
-// Real-time live fixtures from API-Football
+// Real-time live fixtures from API-Football (with database fallback)
 builder.queryField("liveFixturesFromApi", (t) =>
   t.field({
     type: [LiveFixtureType],
-    resolve: async () => {
+    resolve: async (_parent, _args, ctx) => {
       try {
         const fixtures = await footballApiClient.getLiveFixtures();
-        return fixtures.map((f) => ({
-          id: f.id,
-          date: f.date,
-          timestamp: f.timestamp,
-          status: f.status.long,
-          statusShort: f.status.short,
-          elapsed: f.status.elapsed,
-          round: f.round,
-          homeTeam: {
-            id: f.homeTeam.id,
-            name: f.homeTeam.name,
-            logo: (f.homeTeam as any).logo || null,
-          },
-          awayTeam: {
-            id: f.awayTeam.id,
-            name: f.awayTeam.name,
-            logo: (f.awayTeam as any).logo || null,
-          },
-          goalsHome: f.goals.home,
-          goalsAway: f.goals.away,
-          league: f.league,
-        }));
+        if (fixtures.length > 0) {
+          return fixtures.map((f) => ({
+            id: f.id,
+            date: f.date,
+            timestamp: f.timestamp,
+            status: f.status.long,
+            statusShort: f.status.short,
+            elapsed: f.status.elapsed,
+            round: f.round,
+            homeTeam: {
+              id: f.homeTeam.id,
+              name: f.homeTeam.name,
+              logo: (f.homeTeam as any).logo || null,
+            },
+            awayTeam: {
+              id: f.awayTeam.id,
+              name: f.awayTeam.name,
+              logo: (f.awayTeam as any).logo || null,
+            },
+            goalsHome: f.goals.home,
+            goalsAway: f.goals.away,
+            league: f.league,
+          }));
+        }
       } catch (error) {
         console.error("Error fetching live fixtures from API:", error);
-        return [];
       }
+
+      // Fallback to database for live fixtures (status 1H, 2H, HT, ET, P, BT, LIVE)
+      console.log(
+        "[liveFixturesFromApi] Falling back to database for live fixtures"
+      );
+      const liveStatuses = ["1H", "2H", "HT", "ET", "P", "BT", "LIVE"];
+      const dbFixtures = await ctx.prisma.fixture.findMany({
+        where: {
+          statusShort: { in: liveStatuses },
+        },
+        include: {
+          homeTeam: true,
+          awayTeam: true,
+          season: {
+            include: {
+              league: {
+                include: {
+                  country: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { timestamp: "desc" },
+      });
+
+      console.log(
+        `[liveFixturesFromApi] Found ${dbFixtures.length} live fixtures in database`
+      );
+
+      return dbFixtures.map((f) => ({
+        id: f.id,
+        date: f.date.toISOString(),
+        timestamp: f.timestamp,
+        status: f.status,
+        statusShort: f.statusShort,
+        elapsed: f.elapsed,
+        round: f.round,
+        homeTeam: {
+          id: f.homeTeam.id,
+          name: f.homeTeam.name,
+          logo: f.homeTeam.logo,
+        },
+        awayTeam: {
+          id: f.awayTeam.id,
+          name: f.awayTeam.name,
+          logo: f.awayTeam.logo,
+        },
+        goalsHome: f.goalsHome,
+        goalsAway: f.goalsAway,
+        league: {
+          id: f.season.league.id,
+          name: f.season.league.name,
+          logo: f.season.league.logo,
+          country: f.season.league.country?.name || "England",
+        },
+      }));
     },
   })
 );

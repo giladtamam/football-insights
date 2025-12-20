@@ -33,15 +33,47 @@ import { H2HTab } from './match-center/H2HTab'
 type Tab = 'overview' | 'lineups' | 'stats' | 'odds' | 'model' | 'notes' | 'h2h'
 
 export function MatchCenter() {
-  const { selectedFixtureId, setSelectedFixture } = useAppStore()
+  const { selectedFixtureId, selectedLiveFixture, setSelectedFixture } = useAppStore()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
 
+  // Skip database query if we have live fixture data from API
   const { data, loading, error } = useQuery(GET_FIXTURE, {
     variables: { id: selectedFixtureId },
-    skip: !selectedFixtureId,
+    skip: !selectedFixtureId || !!selectedLiveFixture,
   })
 
-  const fixture = data?.fixture
+  // Use live fixture data if available, otherwise use database data
+  const fixture = selectedLiveFixture 
+    ? {
+        id: selectedLiveFixture.id,
+        date: selectedLiveFixture.date,
+        timestamp: selectedLiveFixture.timestamp,
+        status: selectedLiveFixture.status,
+        statusShort: selectedLiveFixture.statusShort,
+        elapsed: selectedLiveFixture.elapsed,
+        round: selectedLiveFixture.round,
+        goalsHome: selectedLiveFixture.goalsHome,
+        goalsAway: selectedLiveFixture.goalsAway,
+        xgHome: null,
+        xgAway: null,
+        isLive: true,
+        isFinished: false,
+        isUpcoming: false,
+        venue: null,
+        referee: null,
+        homeTeam: selectedLiveFixture.homeTeam,
+        awayTeam: selectedLiveFixture.awayTeam,
+        season: {
+          id: 0,
+          league: {
+            id: selectedLiveFixture.league.id,
+            name: selectedLiveFixture.league.name,
+            logo: selectedLiveFixture.league.logo,
+            country: { name: selectedLiveFixture.league.country, flag: null },
+          },
+        },
+      }
+    : data?.fixture
 
   const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
     { id: 'overview', label: 'Overview', icon: Target },
@@ -67,7 +99,7 @@ export function MatchCenter() {
     )
   }
 
-  if (loading) {
+  if (loading && !selectedLiveFixture) {
     return (
       <div className="h-full p-4 space-y-4">
         <div className="h-24 bg-terminal-elevated/50 rounded-lg animate-pulse" />
@@ -81,7 +113,7 @@ export function MatchCenter() {
     )
   }
 
-  if (error || !fixture) {
+  if ((error && !selectedLiveFixture) || !fixture) {
     return (
       <div className="h-full flex items-center justify-center p-8">
         <div className="text-center">

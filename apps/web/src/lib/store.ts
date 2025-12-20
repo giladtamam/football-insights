@@ -14,11 +14,27 @@ interface Team {
   logo?: string | null
 }
 
+interface LiveFixtureData {
+  id: number
+  date: string
+  timestamp: number
+  status: string
+  statusShort: string
+  elapsed: number | null
+  round: string | null
+  goalsHome: number | null
+  goalsAway: number | null
+  homeTeam: { id: number; name: string; logo: string | null }
+  awayTeam: { id: number; name: string; logo: string | null }
+  league: { id: number; name: string; logo: string | null; country: string }
+}
+
 interface AppState {
   // Selection state
   selectedLeagueId: number | null
   selectedSeasonId: number | null
   selectedFixtureId: number | null
+  selectedLiveFixture: LiveFixtureData | null // For live fixtures from API
   
   // Favorites
   favoriteLeagueIds: number[]
@@ -53,7 +69,7 @@ interface AppState {
   
   // Actions
   setSelectedLeague: (leagueId: number | null, seasonId?: number | null) => void
-  setSelectedFixture: (fixtureId: number | null) => void
+  setSelectedFixture: (fixtureId: number | null, liveFixtureData?: LiveFixtureData | null) => void
   toggleFavoriteLeague: (leagueId: number) => void
   toggleFavoriteTeam: (teamId: number) => void
   setActiveTab: (tab: AppState['activeTab']) => void
@@ -80,6 +96,7 @@ export const useAppStore = create<AppState>()(
       selectedLeagueId: null,
       selectedSeasonId: null,
       selectedFixtureId: null,
+      selectedLiveFixture: null,
       favoriteLeagueIds: [],
       favoriteTeamIds: [],
       activeTab: 'fixtures',
@@ -107,8 +124,9 @@ export const useAppStore = create<AppState>()(
         selectedFixtureId: null,
       }),
       
-      setSelectedFixture: (fixtureId) => set({ 
+      setSelectedFixture: (fixtureId, liveFixtureData) => set({ 
         selectedFixtureId: fixtureId,
+        selectedLiveFixture: liveFixtureData ?? null,
         showMatchCenter: fixtureId !== null, // Show match center when fixture is selected
         rightPanelCollapsed: false, // Ensure panel is not collapsed
       }),

@@ -267,7 +267,32 @@ export function MatchList() {
                 league={league}
                 fixtures={leagueFixtures}
                 selectedFixtureId={selectedFixtureId}
-                onSelectFixture={setSelectedFixture}
+                onSelectFixture={(id, fixture) => {
+                  // For live fixtures from API, pass the full fixture data
+                  if (fixture.isLive) {
+                    setSelectedFixture(id, {
+                      id: fixture.id,
+                      date: fixture.date,
+                      timestamp: fixture.timestamp,
+                      status: fixture.status,
+                      statusShort: fixture.statusShort,
+                      elapsed: fixture.elapsed,
+                      round: fixture.round,
+                      goalsHome: fixture.goalsHome,
+                      goalsAway: fixture.goalsAway,
+                      homeTeam: fixture.homeTeam,
+                      awayTeam: fixture.awayTeam,
+                      league: {
+                        id: fixture.season.league.id,
+                        name: fixture.season.league.name,
+                        logo: fixture.season.league.logo,
+                        country: fixture.season.league.country?.name || 'Unknown',
+                      },
+                    })
+                  } else {
+                    setSelectedFixture(id)
+                  }
+                }}
                 showXg={showXg}
               />
             ))}
@@ -282,7 +307,7 @@ interface LeagueGroupProps {
   league: Fixture['season']['league']
   fixtures: Fixture[]
   selectedFixtureId: number | null
-  onSelectFixture: (id: number) => void
+  onSelectFixture: (id: number, fixture: Fixture) => void
   showXg: boolean
 }
 
@@ -308,7 +333,7 @@ function LeagueGroup({ league, fixtures, selectedFixtureId, onSelectFixture, sho
             key={fixture.id}
             fixture={fixture}
             isSelected={selectedFixtureId === fixture.id}
-            onSelect={() => onSelectFixture(fixture.id)}
+            onSelect={() => onSelectFixture(fixture.id, fixture)}
             showXg={showXg}
           />
         ))}

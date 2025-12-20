@@ -258,6 +258,41 @@ export const GET_STANDINGS = gql`
   ${TEAM_FRAGMENT}
 `;
 
+// Real-time standings from API for 2024-2025 season
+export const GET_LIVE_STANDINGS = gql`
+  query GetLiveStandings($leagueId: Int!, $season: Int) {
+    liveStandings(leagueId: $leagueId, season: $season) {
+      rank
+      team {
+        id
+        name
+        logo
+      }
+      points
+      goalsDiff
+      form
+      status
+      description
+      played
+      win
+      draw
+      lose
+      goalsFor
+      goalsAgainst
+      homeWin
+      homeDraw
+      homeLose
+      homeGoalsFor
+      homeGoalsAgainst
+      awayWin
+      awayDraw
+      awayLose
+      awayGoalsFor
+      awayGoalsAgainst
+    }
+  }
+`;
+
 export const GET_TEAM = gql`
   query GetTeam($id: Int!) {
     team(id: $id) {

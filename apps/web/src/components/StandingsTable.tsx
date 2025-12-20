@@ -16,7 +16,7 @@ import {
   Check,
 } from 'lucide-react'
 import { cn } from '../lib/utils'
-import { GET_STANDINGS } from '../graphql/queries'
+import { GET_LIVE_STANDINGS } from '../graphql/queries'
 import { useExport } from '../hooks/useExport'
 
 interface StandingsTableProps {
@@ -36,12 +36,13 @@ export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClic
 
   const { exportToCSV, copyToClipboard, exportStandings } = useExport()
 
-  const { data, loading, error, refetch } = useQuery(GET_STANDINGS, {
-    variables: { leagueId, seasonId },
-    fetchPolicy: 'cache-and-network',
+  // Use live standings from API - season auto-detected by backend based on current date
+  const { data, loading, error, refetch } = useQuery(GET_LIVE_STANDINGS, {
+    variables: { leagueId }, // Let backend auto-detect current season
+    fetchPolicy: 'network-only', // Always fetch fresh data from API
   })
 
-  const standings = data?.standings || []
+  const standings = data?.liveStandings || []
   const leagueName = standings[0]?.team?.name ? 'League' : 'Standings'
 
   const handleExportCSV = () => {
@@ -226,7 +227,7 @@ export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClic
           <tbody className="divide-y divide-terminal-border/50">
             {sortedStandings.map((team: any, index: number) => (
               <tr 
-                key={team.team.id}
+                key={`${team.rank}-${team.team.id}`}
                 onClick={() => onTeamClick?.(team.team.id)}
                 className={cn(
                   "hover:bg-terminal-elevated/50 transition-colors",
@@ -333,11 +334,11 @@ export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClic
 
 // Compact standings widget for sidebar
 export function StandingsWidget({ leagueId, seasonId }: { leagueId: number; seasonId?: number }) {
-  const { data, loading } = useQuery(GET_STANDINGS, {
-    variables: { leagueId, seasonId },
+  const { data, loading } = useQuery(GET_LIVE_STANDINGS, {
+    variables: { leagueId }, // Let backend auto-detect current season
   })
 
-  const standings = data?.standings?.slice(0, 5) || []
+  const standings = data?.liveStandings?.slice(0, 5) || []
 
   if (loading) {
     return (

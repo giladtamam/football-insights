@@ -59,7 +59,7 @@ function App() {
 
       {/* Main Content - Three Panel Layout */}
       <main className="flex-1 flex overflow-hidden">
-        {/* Left Panel - League Navigator */}
+        {/* Left Panel - League Navigator (Sticky) */}
         <AnimatePresence mode="wait">
           {!leftPanelCollapsed && (
             <motion.aside
@@ -67,7 +67,7 @@ function App() {
               animate={{ width: 280, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="h-full border-r border-terminal-border flex-shrink-0 overflow-hidden hidden md:block"
+              className="sticky top-0 h-[calc(100vh-3.5rem)] border-r border-terminal-border flex-shrink-0 overflow-y-auto hidden md:block"
             >
               <LeagueNavigator />
             </motion.aside>
@@ -75,11 +75,11 @@ function App() {
         </AnimatePresence>
 
         {/* Center Panel - Match List */}
-        <section className="flex-1 min-w-0 h-full overflow-hidden border-r border-terminal-border">
+        <section className="flex-1 min-w-0 h-full overflow-auto border-r border-terminal-border">
           <MatchList />
         </section>
 
-        {/* Right Panel - Match Center */}
+        {/* Right Panel - Match Center (Sticky) */}
         <AnimatePresence mode="wait">
           {shouldShowMatchCenter && (
             <motion.aside
@@ -87,7 +87,7 @@ function App() {
               animate={{ width: 480, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="h-full flex-shrink-0 overflow-hidden hidden lg:block"
+              className="sticky top-0 h-[calc(100vh-3.5rem)] flex-shrink-0 overflow-y-auto hidden lg:block"
             >
               <MatchCenter />
             </motion.aside>
