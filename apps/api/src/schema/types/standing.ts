@@ -1,0 +1,35 @@
+import { builder } from '../builder';
+
+export const Standing = builder.prismaObject('Standing', {
+  fields: (t) => ({
+    id: t.exposeInt('id'),
+    seasonId: t.exposeInt('seasonId'),
+    teamId: t.exposeInt('teamId'),
+    rank: t.exposeInt('rank'),
+    points: t.exposeInt('points'),
+    goalsDiff: t.exposeInt('goalsDiff'),
+    group: t.exposeString('group', { nullable: true }),
+    form: t.exposeString('form', { nullable: true }),
+    status: t.exposeString('status', { nullable: true }),
+    description: t.exposeString('description', { nullable: true }),
+    played: t.exposeInt('played'),
+    win: t.exposeInt('win'),
+    draw: t.exposeInt('draw'),
+    lose: t.exposeInt('lose'),
+    goalsFor: t.exposeInt('goalsFor'),
+    goalsAgainst: t.exposeInt('goalsAgainst'),
+    homeWin: t.exposeInt('homeWin'),
+    homeDraw: t.exposeInt('homeDraw'),
+    homeLose: t.exposeInt('homeLose'),
+    homeGoalsFor: t.exposeInt('homeGoalsFor'),
+    homeGoalsAgainst: t.exposeInt('homeGoalsAgainst'),
+    awayWin: t.exposeInt('awayWin'),
+    awayDraw: t.exposeInt('awayDraw'),
+    awayLose: t.exposeInt('awayLose'),
+    awayGoalsFor: t.exposeInt('awayGoalsFor'),
+    awayGoalsAgainst: t.exposeInt('awayGoalsAgainst'),
+    season: t.relation('season'),
+    team: t.relation('team'),
+  }),
+});
+

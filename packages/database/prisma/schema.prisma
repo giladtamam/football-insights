@@ -1,0 +1,304 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Core Football Data Models
+// ============================================
+
+model Country {
+  id      Int      @id
+  name    String
+  code    String?
+  flag    String?
+  leagues League[]
+  teams   Team[]
+}
+
+model League {
+  id         Int              @id
+  name       String
+  type       String           // "League" or "Cup"
+  logo       String?
+  countryId  Int
+  country    Country          @relation(fields: [countryId], references: [id])
+  seasons    Season[]
+  teams      Team[]
+  favoriteBy FavoriteLeague[]
+
+  @@index([countryId])
+}
+
+model Season {
+  id        Int         @id
+  year      Int
+  startDate DateTime
+  endDate   DateTime
+  current   Boolean     @default(false)
+  leagueId  Int
+  league    League      @relation(fields: [leagueId], references: [id])
+  fixtures  Fixture[]
+  standings Standing[]
+
+  @@index([leagueId])
+  @@index([year])
+}
+
+model Team {
+  id            Int            @id
+  name          String
+  code          String?
+  logo          String?
+  venue         String?
+  venueCapacity Int?
+  countryId     Int
+  country       Country        @relation(fields: [countryId], references: [id])
+  leagues       League[]
+  homeFixtures  Fixture[]      @relation("HomeTeam")
+  awayFixtures  Fixture[]      @relation("AwayTeam")
+  standings     Standing[]
+  favoriteBy    FavoriteTeam[]
+
+  @@index([countryId])
+}
+
+model Fixture {
+  id          Int           @id
+  date        DateTime
+  timestamp   Int
+  timezone    String        @default("UTC")
+  status      String        // Full status text
+  statusShort String        // Short status code (FT, NS, 1H, etc.)
+  elapsed     Int?          // Minutes elapsed
+  round       String?       // "Regular Season - 1", etc.
+  venue       String?
+  referee     String?
+  seasonId    Int
+  homeTeamId  Int
+  awayTeamId  Int
+  goalsHome   Int?
+  goalsAway   Int?
+  xgHome      Float?
+  xgAway      Float?
+  season         Season          @relation(fields: [seasonId], references: [id])
+  homeTeam       Team            @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam       Team            @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  stats          FixtureStats?
+  events         FixtureEvent[]
+  lineups        Lineup[]
+  notes          MatchNote[]
+  odds           OddsSnapshot[]
+  userSelections UserSelection[]
+
+  @@index([seasonId])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+  @@index([date])
+  @@index([statusShort])
+}
+
+model FixtureStats {
+  id        Int     @id @default(autoincrement())
+  fixtureId Int     @unique
+  fixture   Fixture @relation(fields: [fixtureId], references: [id])
+  homeStats Json    // Detailed stats as JSON
+  awayStats Json    // Detailed stats as JSON
+}
+
+model FixtureEvent {
+  id        Int     @id @default(autoincrement())
+  fixtureId Int
+  fixture   Fixture @relation(fields: [fixtureId], references: [id])
+  teamId    Int
+  playerId  Int?
+  type      String  // "Goal", "Card", "Subst", "Var"
+  detail    String? // "Normal Goal", "Yellow Card", etc.
+  minute    Int
+  extraTime Int?
+  comments  String?
+
+  @@index([fixtureId])
+}
+
+model Lineup {
+  id         Int     @id @default(autoincrement())
+  fixtureId  Int
+  fixture    Fixture @relation(fields: [fixtureId], references: [id])
+  teamId     Int
+  formation  String?
+  startingXI Json    // Array of player objects
+  substitutes Json   // Array of player objects
+  coach      String?
+
+  @@unique([fixtureId, teamId])
+  @@index([fixtureId])
+}
+
+model Standing {
+  id               Int     @id @default(autoincrement())
+  seasonId         Int
+  teamId           Int
+  rank             Int
+  points           Int
+  goalsDiff        Int
+  group            String?
+  form             String? // Last 5 results: "WWDLW"
+  status           String? // "same", "up", "down"
+  description      String? // "Promotion", "Relegation", etc.
+  played           Int
+  win              Int
+  draw             Int
+  lose             Int
+  goalsFor         Int
+  goalsAgainst     Int
+  homeWin          Int     @default(0)
+  homeDraw         Int     @default(0)
+  homeLose         Int     @default(0)
+  homeGoalsFor     Int     @default(0)
+  homeGoalsAgainst Int     @default(0)
+  awayWin          Int     @default(0)
+  awayDraw         Int     @default(0)
+  awayLose         Int     @default(0)
+  awayGoalsFor     Int     @default(0)
+  awayGoalsAgainst Int     @default(0)
+  season           Season  @relation(fields: [seasonId], references: [id])
+  team             Team    @relation(fields: [teamId], references: [id])
+
+  @@unique([seasonId, teamId])
+  @@index([seasonId])
+  @@index([teamId])
+}
+
+// ============================================
+// User & Notes Models
+// ============================================
+
+model User {
+  id              Int              @id @default(autoincrement())
+  email           String           @unique
+  name            String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  notes           MatchNote[]
+  favoriteTeams   FavoriteTeam[]
+  favoriteLeagues FavoriteLeague[]
+}
+
+model MatchNote {
+  id        Int      @id @default(autoincrement())
+  fixtureId Int
+  userId    Int
+  content   String
+  tags      Json     @default("[]") // Array of tag strings
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  fixture   Fixture  @relation(fields: [fixtureId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([fixtureId])
+  @@index([userId])
+}
+
+model FavoriteTeam {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  teamId    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  team      Team     @relation(fields: [teamId], references: [id])
+
+  @@unique([userId, teamId])
+}
+
+model FavoriteLeague {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  leagueId  Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  league    League   @relation(fields: [leagueId], references: [id])
+
+  @@unique([userId, leagueId])
+}
+
+// ============================================
+// V1 Scaffolded Models - Odds & Market
+// ============================================
+
+model OddsSnapshot {
+  id         Int      @id @default(autoincrement())
+  fixtureId  Int
+  bookmaker  String
+  market     String   // "1X2", "O/U 2.5", "BTTS", "AH"
+  homeOdds   Float?
+  drawOdds   Float?
+  awayOdds   Float?
+  overOdds   Float?
+  underOdds  Float?
+  yesOdds    Float?   // For BTTS
+  noOdds     Float?   // For BTTS
+  line       Float?   // For Asian Handicap / Over-Under
+  isOpening  Boolean  @default(false)
+  isClosing  Boolean  @default(false)
+  capturedAt DateTime @default(now())
+  fixture    Fixture  @relation(fields: [fixtureId], references: [id])
+
+  @@index([fixtureId])
+  @@index([bookmaker])
+  @@index([market])
+  @@index([capturedAt])
+}
+
+// ============================================
+// V2 Scaffolded Models - Alerts & Screening
+// ============================================
+
+model Alert {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  type        String   // "lineup", "odds_move", "value", "news"
+  config      Json     // Alert configuration
+  isActive    Boolean  @default(true)
+  lastTriggered DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([type])
+}
+
+model SavedScreen {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  name      String
+  filters   Json     // Screen filter configuration
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model UserSelection {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  fixtureId     Int
+  market        String
+  selection     String   // "home", "draw", "away", "over", "under"
+  odds          Float
+  openingOdds   Float?
+  closingOdds   Float?
+  stake         Float?
+  result        String?  // "win", "lose", "void", "pending"
+  createdAt     DateTime @default(now())
+  fixture       Fixture  @relation(fields: [fixtureId], references: [id])
+
+  @@index([userId])
+  @@index([fixtureId])
+}
+

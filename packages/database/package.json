@@ -1,0 +1,35 @@
+{
+  "name": "@football-insights/database",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "lint": "eslint src/",
+    "clean": "rm -rf dist .turbo node_modules"
+  },
+  "dependencies": {
+    "@pothos/plugin-prisma": "^4.14.1",
+    "@prisma/client": "^6.19.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.1.0",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
