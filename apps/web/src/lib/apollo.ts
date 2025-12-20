@@ -1,9 +1,10 @@
-import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client'
+import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 
 const httpLink = createHttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql',
-  credentials: 'include',
-})
+  // @ts-ignore
+  uri: import.meta.env.VITE_GRAPHQL_URL || "http://localhost:4000/graphql",
+  credentials: "include",
+});
 
 export const apolloClient = new ApolloClient({
   link: httpLink,
@@ -12,28 +13,27 @@ export const apolloClient = new ApolloClient({
       Query: {
         fields: {
           fixtures: {
-            keyArgs: ['filter'],
-            merge(existing = [], incoming) {
-              return [...incoming]
+            keyArgs: ["filter"],
+            merge(_, incoming) {
+              return [...incoming];
             },
           },
         },
       },
       Fixture: {
-        keyFields: ['id'],
+        keyFields: ["id"],
       },
       Team: {
-        keyFields: ['id'],
+        keyFields: ["id"],
       },
       League: {
-        keyFields: ['id'],
+        keyFields: ["id"],
       },
     },
   }),
   defaultOptions: {
     watchQuery: {
-      fetchPolicy: 'cache-and-network',
+      fetchPolicy: "cache-and-network",
     },
   },
-})
-
+});

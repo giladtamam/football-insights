@@ -1,20 +1,13 @@
 import { useMemo } from 'react'
 import { useQuery } from '@apollo/client'
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Minus,
-  AlertTriangle,
-  CheckCircle,
+import {
   Info,
   Zap,
   Target,
   Shield,
   Circle,
-  ArrowRight,
-  Loader2,
 } from 'lucide-react'
-import { cn, getFormColor, calculate1X2Probabilities, calculateOverUnderProbabilities, formatDate } from '../../lib/utils'
+import { cn, getFormColor, calculate1X2Probabilities, calculateOverUnderProbabilities } from '../../lib/utils'
 import { GET_FIXTURE_EVENTS, GET_TEAM_FIXTURES } from '../../graphql/queries'
 
 interface OverviewTabProps {
@@ -23,7 +16,7 @@ interface OverviewTabProps {
 
 export function OverviewTab({ fixture }: OverviewTabProps) {
   // Fetch events for match timeline
-  const { data: eventsData, loading: eventsLoading } = useQuery(GET_FIXTURE_EVENTS, {
+  const { data: eventsData } = useQuery(GET_FIXTURE_EVENTS, {
     variables: { fixtureId: fixture.id },
     skip: !fixture.isFinished && !fixture.statusShort?.includes('1H') && !fixture.statusShort?.includes('2H'),
   })
@@ -59,19 +52,17 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
 
   // Events timeline
   const events = eventsData?.fixtureEvents || []
-  const goals = events.filter((e: any) => e.type === 'Goal')
-  const cards = events.filter((e: any) => e.type === 'Card')
-  
+
   // Calculate model probabilities (simplified Poisson-based)
   const lambdaHome = fixture.xgHome ?? 1.5
   const lambdaAway = fixture.xgAway ?? 1.2
-  
-  const probs1X2 = useMemo(() => 
-    calculate1X2Probabilities(lambdaHome, lambdaAway), 
+
+  const probs1X2 = useMemo(() =>
+    calculate1X2Probabilities(lambdaHome, lambdaAway),
     [lambdaHome, lambdaAway]
   )
 
-  const probsOU = useMemo(() => 
+  const probsOU = useMemo(() =>
     calculateOverUnderProbabilities(lambdaHome, lambdaAway, 2.5),
     [lambdaHome, lambdaAway]
   )
@@ -79,7 +70,7 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
   // Generate what to watch insights
   const insights = useMemo(() => {
     const items: { text: string; type: 'primary' | 'warning' | 'danger' }[] = []
-    
+
     // xG based insights
     if (fixture.xgHome && fixture.xgAway) {
       const totalXg = fixture.xgHome + fixture.xgAway
@@ -133,7 +124,7 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
           </h4>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {events.filter((e: any) => e.type === 'Goal' || e.type === 'Card').map((event: any, i: number) => (
-              <div 
+              <div
                 key={i}
                 className={cn(
                   "flex items-center gap-3 text-sm p-2 rounded",
@@ -183,19 +174,19 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
             Poisson Model
           </span>
         </div>
-        
+
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <ProbabilityBar 
+          <ProbabilityBar
             label={fixture.homeTeam.name.split(' ')[0]}
             probability={probs1X2.home}
             color="success"
           />
-          <ProbabilityBar 
+          <ProbabilityBar
             label="Draw"
             probability={probs1X2.draw}
             color="neutral"
           />
-          <ProbabilityBar 
+          <ProbabilityBar
             label={fixture.awayTeam.name.split(' ')[0]}
             probability={probs1X2.away}
             color="danger"
@@ -222,13 +213,13 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
       <div className="stat-card">
         <h4 className="text-sm font-semibold mb-3">Recent Form (Last 5)</h4>
         <div className="space-y-3">
-          <FormRow 
+          <FormRow
             teamName={fixture.homeTeam.name}
             teamLogo={fixture.homeTeam.logo}
             form={teamForm.home}
             isHome
           />
-          <FormRow 
+          <FormRow
             teamName={fixture.awayTeam.name}
             teamLogo={fixture.awayTeam.logo}
             form={teamForm.away}
@@ -264,7 +255,7 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
         <h4 className="text-sm font-semibold mb-3">Most Likely Scorelines</h4>
         <div className="grid grid-cols-3 gap-2">
           {getMostLikelyScorelines(lambdaHome, lambdaAway).slice(0, 6).map((score, i) => (
-            <div 
+            <div
               key={i}
               className={cn(
                 "p-2 rounded text-center",
@@ -286,17 +277,17 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
             Data Credibility
           </h4>
           <div className="flex items-center gap-2">
-            <CredibilityIndicator 
-              label="Form" 
-              level={homeFormData && awayFormData ? "high" : "low"} 
+            <CredibilityIndicator
+              label="Form"
+              level={homeFormData && awayFormData ? "high" : "low"}
             />
-            <CredibilityIndicator 
-              label="xG" 
-              level={fixture.xgHome !== null ? "high" : "medium"} 
+            <CredibilityIndicator
+              label="xG"
+              level={fixture.xgHome !== null ? "high" : "medium"}
             />
-            <CredibilityIndicator 
-              label="Events" 
-              level={events.length > 0 ? "high" : fixture.isUpcoming ? "medium" : "low"} 
+            <CredibilityIndicator
+              label="Events"
+              level={events.length > 0 ? "high" : fixture.isUpcoming ? "medium" : "low"}
             />
           </div>
         </div>
@@ -308,11 +299,11 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
 // Helper function to calculate most likely scorelines
 function getMostLikelyScorelines(lambdaHome: number, lambdaAway: number) {
   const scorelines: { home: number; away: number; prob: number }[] = []
-  
+
   const poisson = (lambda: number, k: number) => {
     return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k)
   }
-  
+
   const factorial = (n: number): number => {
     if (n <= 1) return 1
     return n * factorial(n - 1)
@@ -337,7 +328,7 @@ interface ProbabilityBarProps {
 function ProbabilityBar({ label, probability, color }: ProbabilityBarProps) {
   const colorClasses = {
     success: 'bg-accent-success',
-    danger: 'bg-accent-danger', 
+    danger: 'bg-accent-danger',
     neutral: 'bg-terminal-muted',
   }
 
@@ -347,7 +338,7 @@ function ProbabilityBar({ label, probability, color }: ProbabilityBarProps) {
         {(probability * 100).toFixed(0)}%
       </div>
       <div className="h-1.5 bg-terminal-elevated rounded-full overflow-hidden mb-1">
-        <div 
+        <div
           className={cn("h-full rounded-full transition-all", colorClasses[color])}
           style={{ width: `${probability * 100}%` }}
         />

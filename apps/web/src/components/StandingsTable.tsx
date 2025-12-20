@@ -1,16 +1,13 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@apollo/client'
-import { 
+import {
   Trophy,
   ArrowUp,
   ArrowDown,
-  Minus,
   ChevronUp,
   ChevronDown,
   Loader2,
   RefreshCw,
-  Info,
-  Target,
   Download,
   Copy,
   Check,
@@ -28,7 +25,7 @@ interface StandingsTableProps {
 
 type SortKey = 'rank' | 'points' | 'goalsDiff' | 'goalsFor' | 'goalsAgainst' | 'played' | 'win' | 'draw' | 'lose' | 'form'
 
-export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClick }: StandingsTableProps) {
+export function StandingsTable({ leagueId, compact = false, onTeamClick }: StandingsTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>('rank')
   const [sortAsc, setSortAsc] = useState(true)
   const [showFullTable, setShowFullTable] = useState(!compact)
@@ -61,7 +58,7 @@ export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClic
 
   const sortedStandings = useMemo(() => {
     if (!standings.length) return []
-    
+
     const sorted = [...standings].sort((a, b) => {
       let aVal: number | string = 0
       let bVal: number | string = 0
@@ -145,7 +142,7 @@ export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClic
         <p className="text-sm text-text-secondary mb-4">
           Standings data is not available for this league
         </p>
-        <button 
+        <button
           onClick={() => refetch()}
           className="inline-flex items-center gap-2 px-4 py-2 bg-terminal-elevated hover:bg-terminal-muted rounded-lg text-sm transition-colors"
         >
@@ -157,7 +154,7 @@ export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClic
   }
 
   const SortHeader = ({ label, sortKeyName, className }: { label: string; sortKeyName: SortKey; className?: string }) => (
-    <th 
+    <th
       className={cn(
         "px-2 py-2 text-left cursor-pointer hover:bg-terminal-elevated/50 transition-colors select-none",
         className
@@ -182,21 +179,21 @@ export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClic
           League Table
         </h3>
         <div className="flex items-center gap-1">
-          <button 
+          <button
             onClick={handleCopyToClipboard}
             className="p-1.5 text-text-muted hover:text-accent-primary transition-colors"
             title="Copy to clipboard"
           >
             {copied ? <Check className="w-4 h-4 text-accent-success" /> : <Copy className="w-4 h-4" />}
           </button>
-          <button 
+          <button
             onClick={handleExportCSV}
             className="p-1.5 text-text-muted hover:text-accent-primary transition-colors"
             title="Export to CSV"
           >
             <Download className="w-4 h-4" />
           </button>
-          <button 
+          <button
             onClick={() => refetch()}
             className="p-1.5 text-text-muted hover:text-accent-primary transition-colors"
             title="Refresh"
@@ -225,8 +222,8 @@ export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClic
             </tr>
           </thead>
           <tbody className="divide-y divide-terminal-border/50">
-            {sortedStandings.map((team: any, index: number) => (
-              <tr 
+            {sortedStandings.map((team: any) => (
+              <tr
                 key={`${team.rank}-${team.team.id}`}
                 onClick={() => onTeamClick?.(team.team.id)}
                 className={cn(
@@ -311,7 +308,7 @@ export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClic
             {showFullTable ? 'Show less' : `Show all ${standings.length} teams`}
           </button>
         )}
-        
+
         {/* Legend */}
         <div className="flex items-center gap-4 text-[10px] text-text-muted ml-auto">
           <div className="flex items-center gap-1">
@@ -333,7 +330,7 @@ export function StandingsTable({ leagueId, seasonId, compact = false, onTeamClic
 }
 
 // Compact standings widget for sidebar
-export function StandingsWidget({ leagueId, seasonId }: { leagueId: number; seasonId?: number }) {
+export function StandingsWidget({ leagueId }: { leagueId: number; seasonId?: number }) {
   const { data, loading } = useQuery(GET_LIVE_STANDINGS, {
     variables: { leagueId }, // Let backend auto-detect current season
   })
@@ -360,7 +357,7 @@ export function StandingsWidget({ leagueId, seasonId }: { leagueId: number; seas
       </div>
       <div className="divide-y divide-terminal-border/30">
         {standings.map((team: any) => (
-          <div 
+          <div
             key={team.team.id}
             className="flex items-center gap-2 px-3 py-1.5 text-xs"
           >

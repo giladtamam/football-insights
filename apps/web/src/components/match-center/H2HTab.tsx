@@ -1,5 +1,5 @@
 import { useQuery } from '@apollo/client'
-import { 
+import {
   History,
   Loader2,
   RefreshCw,
@@ -7,7 +7,6 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
-  Trophy,
   Calendar,
 } from 'lucide-react'
 import { cn, formatDate } from '../../lib/utils'
@@ -63,7 +62,7 @@ export function H2HTab({ fixture }: H2HTabProps) {
         <p className="text-sm text-text-secondary mb-4">
           No previous matches found between {fixture.homeTeam.name} and {fixture.awayTeam.name}
         </p>
-        <button 
+        <button
           onClick={() => refetchApi()}
           className="inline-flex items-center gap-2 px-4 py-2 bg-terminal-elevated hover:bg-terminal-muted rounded-lg text-sm transition-colors"
         >
@@ -77,9 +76,9 @@ export function H2HTab({ fixture }: H2HTabProps) {
   // Calculate stats for API data
   if (hasApiData) {
     return (
-      <ApiH2HDisplay 
-        fixture={fixture} 
-        h2hResult={h2hResult} 
+      <ApiH2HDisplay
+        fixture={fixture}
+        h2hResult={h2hResult}
         loading={apiLoading}
         onRefresh={() => refetchApi()}
       />
@@ -88,44 +87,43 @@ export function H2HTab({ fixture }: H2HTabProps) {
 
   // Fallback to DB data display
   return (
-    <DbH2HDisplay 
-      fixture={fixture} 
-      matches={dbMatches} 
+    <DbH2HDisplay
+      fixture={fixture}
+      matches={dbMatches}
     />
   )
 }
 
-function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: { 
+function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
   fixture: any
   h2hResult: any
   loading: boolean
   onRefresh: () => void
 }) {
   const { summary, matches } = h2hResult
-  
+
   // Calculate per-match averages
-  const avgGoalsTeam1 = summary.totalMatches > 0 
+  const avgGoalsTeam1 = summary.totalMatches > 0
     ? (summary.team1Goals / summary.totalMatches).toFixed(1)
     : '0'
-  const avgGoalsTeam2 = summary.totalMatches > 0 
+  const avgGoalsTeam2 = summary.totalMatches > 0
     ? (summary.team2Goals / summary.totalMatches).toFixed(1)
     : '0'
-  
+
   // Form streak analysis
   const getStreak = () => {
     if (matches.length === 0) return { type: 'none', count: 0 }
-    
+
     let currentType: 'home' | 'away' | 'draw' | null = null
     let count = 0
-    
+
     for (const match of matches) {
       const team1Home = match.homeTeamId === fixture.homeTeam.id
       const team1Won = (team1Home && match.homeGoals > match.awayGoals) || (!team1Home && match.awayGoals > match.homeGoals)
-      const team2Won = (team1Home && match.awayGoals > match.homeGoals) || (!team1Home && match.homeGoals > match.awayGoals)
       const isDraw = match.homeGoals === match.awayGoals
-      
+
       const matchType = isDraw ? 'draw' : team1Won ? 'home' : 'away'
-      
+
       if (currentType === null) {
         currentType = matchType
         count = 1
@@ -135,10 +133,10 @@ function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
         break
       }
     }
-    
+
     return { type: currentType, count }
   }
-  
+
   const streak = getStreak()
 
   return (
@@ -149,7 +147,7 @@ function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
           <History className="w-4 h-4 text-accent-primary" />
           Historical Meetings ({summary.totalMatches})
         </h3>
-        <button 
+        <button
           onClick={onRefresh}
           className="p-1 text-text-muted hover:text-accent-primary transition-colors"
         >
@@ -170,13 +168,13 @@ function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
             <div className="text-3xl font-bold text-accent-success">{summary.team1Wins}</div>
             <div className="text-xs text-text-muted">Wins</div>
           </div>
-          
+
           {/* Draws */}
           <div className="text-center px-8">
             <div className="text-3xl font-bold text-text-muted">{summary.draws}</div>
             <div className="text-xs text-text-muted">Draws</div>
           </div>
-          
+
           {/* Away team */}
           <div className="text-center flex-1">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -188,20 +186,20 @@ function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
             <div className="text-xs text-text-muted">Wins</div>
           </div>
         </div>
-        
+
         {/* Visual bar */}
         <div className="h-2 rounded-full bg-terminal-elevated overflow-hidden flex">
-          <div 
-            className="bg-accent-success transition-all" 
-            style={{ width: `${(summary.team1Wins / summary.totalMatches) * 100}%` }} 
+          <div
+            className="bg-accent-success transition-all"
+            style={{ width: `${(summary.team1Wins / summary.totalMatches) * 100}%` }}
           />
-          <div 
-            className="bg-terminal-muted transition-all" 
-            style={{ width: `${(summary.draws / summary.totalMatches) * 100}%` }} 
+          <div
+            className="bg-terminal-muted transition-all"
+            style={{ width: `${(summary.draws / summary.totalMatches) * 100}%` }}
           />
-          <div 
-            className="bg-accent-danger transition-all" 
-            style={{ width: `${(summary.team2Wins / summary.totalMatches) * 100}%` }} 
+          <div
+            className="bg-accent-danger transition-all"
+            style={{ width: `${(summary.team2Wins / summary.totalMatches) * 100}%` }}
           />
         </div>
 
@@ -243,11 +241,11 @@ function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
           )}
           <div>
             <div className="text-sm font-medium">
-              {streak.type === 'home' 
+              {streak.type === 'home'
                 ? `${fixture.homeTeam.name} on ${streak.count}-game winning streak`
                 : streak.type === 'away'
-                ? `${fixture.awayTeam.name} on ${streak.count}-game winning streak`
-                : `${streak.count} consecutive draws`}
+                  ? `${fixture.awayTeam.name} on ${streak.count}-game winning streak`
+                  : `${streak.count} consecutive draws`}
             </div>
             <div className="text-xs text-text-muted">Current form in H2H meetings</div>
           </div>
@@ -267,7 +265,7 @@ function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
             const team2Goals = team1IsHome ? match.awayGoals : match.homeGoals
             const team1Won = team1Goals > team2Goals
             const team2Won = team2Goals > team1Goals
-            
+
             return (
               <div
                 key={i}
@@ -280,7 +278,7 @@ function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
                 <div className="text-xs text-text-muted w-24">
                   {formatDate(match.date, { day: 'numeric', month: 'short', year: '2-digit' })}
                 </div>
-                
+
                 <div className="flex-1 flex items-center gap-2">
                   {/* Home team */}
                   <div className="flex items-center gap-2 flex-1 justify-end">
@@ -294,7 +292,7 @@ function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
                       <img src={match.homeTeamLogo} alt="" className="w-5 h-5 object-contain" />
                     )}
                   </div>
-                  
+
                   {/* Score */}
                   <div className={cn(
                     "px-3 py-1 rounded font-bold text-sm min-w-[50px] text-center",
@@ -304,7 +302,7 @@ function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
                   )}>
                     {match.homeGoals} - {match.awayGoals}
                   </div>
-                  
+
                   {/* Away team */}
                   <div className="flex items-center gap-2 flex-1">
                     {match.awayTeamLogo && (
@@ -370,11 +368,11 @@ function ApiH2HDisplay({ fixture, h2hResult, loading, onRefresh }: {
 
 function DbH2HDisplay({ fixture, matches }: { fixture: any; matches: any[] }) {
   // Calculate H2H stats from database matches
-  const homeWins = matches.filter((m: any) => 
+  const homeWins = matches.filter((m: any) =>
     (m.homeTeam.id === fixture.homeTeam.id && m.goalsHome > m.goalsAway) ||
     (m.awayTeam.id === fixture.homeTeam.id && m.goalsAway > m.goalsHome)
   ).length
-  const awayWins = matches.filter((m: any) => 
+  const awayWins = matches.filter((m: any) =>
     (m.homeTeam.id === fixture.awayTeam.id && m.goalsHome > m.goalsAway) ||
     (m.awayTeam.id === fixture.awayTeam.id && m.goalsAway > m.goalsHome)
   ).length
@@ -402,20 +400,20 @@ function DbH2HDisplay({ fixture, matches }: { fixture: any; matches: any[] }) {
             <div className="text-xs text-text-muted">{fixture.awayTeam.name}</div>
           </div>
         </div>
-        
+
         {/* Visual bar */}
         <div className="mt-3 h-2 rounded-full bg-terminal-elevated overflow-hidden flex">
-          <div 
-            className="bg-accent-success" 
-            style={{ width: `${(homeWins / matches.length) * 100}%` }} 
+          <div
+            className="bg-accent-success"
+            style={{ width: `${(homeWins / matches.length) * 100}%` }}
           />
-          <div 
-            className="bg-terminal-muted" 
-            style={{ width: `${(draws / matches.length) * 100}%` }} 
+          <div
+            className="bg-terminal-muted"
+            style={{ width: `${(draws / matches.length) * 100}%` }}
           />
-          <div 
-            className="bg-accent-danger" 
-            style={{ width: `${(awayWins / matches.length) * 100}%` }} 
+          <div
+            className="bg-accent-danger"
+            style={{ width: `${(awayWins / matches.length) * 100}%` }}
           />
         </div>
       </div>

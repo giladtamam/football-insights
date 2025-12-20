@@ -1,10 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
+import {
   FileText,
   Plus,
   Tag,
-  Clock,
   Edit3,
   Trash2,
   Save,
@@ -16,7 +15,7 @@ import {
   HelpCircle,
 } from 'lucide-react'
 import { useAppStore } from '../../lib/store'
-import { cn, formatDate } from '../../lib/utils'
+import { cn } from '../../lib/utils'
 
 interface NotesTabProps {
   fixture: any
@@ -63,8 +62,8 @@ export function NotesTab({ fixture }: NotesTabProps) {
   }
 
   const toggleTag = (tagId: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tagId) 
+    setSelectedTags(prev =>
+      prev.includes(tagId)
         ? prev.filter(t => t !== tagId)
         : [...prev, tagId]
     )
@@ -80,10 +79,10 @@ export function NotesTab({ fixture }: NotesTabProps) {
         </h4>
         <div className="flex flex-wrap gap-2">
           {PRESET_TAGS.map(tag => {
-            const isActive = isEditing 
+            const isActive = isEditing
               ? selectedTags.includes(tag.id)
               : existingNote?.tags?.includes(tag.id)
-            
+
             return (
               <button
                 key={tag.id}
@@ -141,7 +140,7 @@ export function NotesTab({ fixture }: NotesTabProps) {
                       onClick={() => toggleTag(tag.id)}
                       className={cn(
                         "chip text-[10px] transition-all",
-                        selectedTags.includes(tag.id) 
+                        selectedTags.includes(tag.id)
                           ? `bg-${tag.color}/20 text-${tag.color} border-${tag.color}/30`
                           : "chip-neutral hover:bg-terminal-elevated"
                       )}
@@ -321,7 +320,7 @@ function TeamNoteCard({ teamName, teamLogo }: { teamName: string; teamLogo: stri
         )}
         <span className="text-xs font-medium truncate">{teamName}</span>
       </div>
-      
+
       {showInput ? (
         <div className="space-y-2">
           <textarea

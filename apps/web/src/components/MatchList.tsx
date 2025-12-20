@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useQuery } from '@apollo/client'
-import { 
+import {
   Calendar,
   Radio,
   History,
@@ -14,9 +14,9 @@ import {
   Trophy,
   Clock,
 } from 'lucide-react'
-import { GET_TODAY_FIXTURES, GET_LIVE_FIXTURES, GET_LIVE_FIXTURES_FROM_API, GET_FIXTURES } from '../graphql/queries'
+import { GET_TODAY_FIXTURES, GET_LIVE_FIXTURES_FROM_API, GET_FIXTURES } from '../graphql/queries'
 import { useAppStore, TOP_LEAGUES } from '../lib/store'
-import { cn, formatTime, formatDate, isLiveStatus, getFormColor, getStatusText } from '../lib/utils'
+import { cn, formatTime, formatDate, isLiveStatus, getStatusText } from '../lib/utils'
 import { StandingsTable } from './StandingsTable'
 
 interface Fixture {
@@ -61,9 +61,9 @@ interface Fixture {
 type Tab = 'fixtures' | 'results' | 'live' | 'odds' | 'insights' | 'standings'
 
 export function MatchList() {
-  const { 
-    activeTab, 
-    setActiveTab, 
+  const {
+    activeTab,
+    setActiveTab,
     selectedLeagueId,
     selectedFixtureId,
     setSelectedFixture,
@@ -78,7 +78,7 @@ export function MatchList() {
   })
 
   // Use real-time API for live fixtures
-  const { data: liveApiData, loading: liveApiLoading, refetch: refetchLive } = useQuery(GET_LIVE_FIXTURES_FROM_API, {
+  const { data: liveApiData, loading: liveApiLoading } = useQuery(GET_LIVE_FIXTURES_FROM_API, {
     skip: activeTab !== 'live',
     pollInterval: 30000, // Refresh every 30 seconds for live updates
     fetchPolicy: 'network-only', // Always fetch fresh data
@@ -96,7 +96,7 @@ export function MatchList() {
   })
 
   const loading = todayLoading || liveApiLoading || resultsLoading
-  
+
   // Transform live API data to match our Fixture interface
   const liveFixtures: Fixture[] = useMemo(() => {
     const apiFixtures = liveApiData?.liveFixturesFromApi || []
@@ -131,7 +131,7 @@ export function MatchList() {
       },
     }))
   }, [liveApiData])
-  
+
   const fixtures: Fixture[] = useMemo(() => {
     switch (activeTab) {
       case 'fixtures':
@@ -148,7 +148,7 @@ export function MatchList() {
   // Group fixtures by league
   const groupedFixtures = useMemo(() => {
     const groups = new Map<number, { league: Fixture['season']['league']; fixtures: Fixture[] }>()
-    
+
     fixtures.forEach(fixture => {
       const leagueId = fixture.season.league.id
       if (!groups.has(leagueId)) {
@@ -165,13 +165,13 @@ export function MatchList() {
       const aFav = favoriteLeagueIds.includes(a.league.id) ? 0 : 1
       const bFav = favoriteLeagueIds.includes(b.league.id) ? 0 : 1
       if (aFav !== bFav) return aFav - bFav
-      
+
       const aTop = TOP_LEAGUES.findIndex(l => l.id === a.league.id)
       const bTop = TOP_LEAGUES.findIndex(l => l.id === b.league.id)
       if (aTop >= 0 && bTop >= 0) return aTop - bTop
       if (aTop >= 0) return -1
       if (bTop >= 0) return 1
-      
+
       return a.league.name.localeCompare(b.league.name)
     })
   }, [fixtures, favoriteLeagueIds])
@@ -191,7 +191,7 @@ export function MatchList() {
       <div className="border-b border-terminal-border">
         <div className="flex items-center justify-between px-4 py-2">
           <h2 className="text-sm font-semibold font-display">
-            {selectedLeagueId 
+            {selectedLeagueId
               ? TOP_LEAGUES.find(l => l.id === selectedLeagueId)?.name || 'League Matches'
               : "Today's Matches"
             }
@@ -200,7 +200,7 @@ export function MatchList() {
             {formatDate(new Date(), { weekday: 'long', day: 'numeric', month: 'short' })}
           </span>
         </div>
-        
+
         <div className="flex gap-1 px-2 pb-2">
           {tabs.map(tab => (
             <button
@@ -254,7 +254,7 @@ export function MatchList() {
             <Calendar className="w-12 h-12 text-text-muted mx-auto mb-3" />
             <h3 className="text-lg font-medium mb-1">No matches found</h3>
             <p className="text-sm text-text-muted">
-              {activeTab === 'live' 
+              {activeTab === 'live'
                 ? 'No live matches at the moment'
                 : 'Try selecting a different league or date'}
             </p>
@@ -355,7 +355,7 @@ function MatchCard({ fixture, isSelected, onSelect, showXg }: MatchCardProps) {
 
   // Calculate signal chips based on real and mock data
   const signals: { type: 'edge' | 'move' | 'abs' | 'hot'; label: string }[] = []
-  
+
   // xG edge signal
   if (hasXg && fixture.xgHome !== null && fixture.xgAway !== null) {
     const xgDiff = Math.abs(fixture.xgHome - fixture.xgAway)
@@ -445,10 +445,10 @@ function MatchCard({ fixture, isSelected, onSelect, showXg }: MatchCardProps) {
                   signal.type === 'hot' && "chip-info"
                 )}
               >
-                {signal.type === 'edge' && <Zap className="w-2.5 h-2.5" title="xG advantage detected" />}
-                {signal.type === 'move' && <TrendingUp className="w-2.5 h-2.5" title="Significant odds movement" />}
-                {signal.type === 'abs' && <AlertTriangle className="w-2.5 h-2.5" title="Key player absent" />}
-                {signal.type === 'hot' && <Sparkles className="w-2.5 h-2.5" title="High-profile fixture" />}
+                {signal.type === 'edge' && <Zap className="w-2.5 h-2.5" />}
+                {signal.type === 'move' && <TrendingUp className="w-2.5 h-2.5" />}
+                {signal.type === 'abs' && <AlertTriangle className="w-2.5 h-2.5" />}
+                {signal.type === 'hot' && <Sparkles className="w-2.5 h-2.5" />}
                 {signal.label}
               </span>
             ))}

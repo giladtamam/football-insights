@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
-import { 
+import {
   Calculator,
   Sliders,
   TrendingUp,
@@ -11,9 +11,8 @@ import {
   ChevronUp,
   Zap,
   Target,
-  Loader2,
 } from 'lucide-react'
-import { cn, calculate1X2Probabilities, calculateOverUnderProbabilities, calculateBTTSProbabilities, generateScorelineDistribution, oddsToImpliedProb, removeOverround } from '../../lib/utils'
+import { cn, calculate1X2Probabilities, calculateOverUnderProbabilities, calculateBTTSProbabilities, generateScorelineDistribution } from '../../lib/utils'
 import { GET_FIXTURE_ODDS } from '../../graphql/queries'
 
 interface ModelTabProps {
@@ -27,7 +26,7 @@ export function ModelTab({ fixture }: ModelTabProps) {
   const [congestionAdjustment, setCongestionAdjustment] = useState(0)
 
   // Fetch live odds for market comparison
-  const { data: oddsData, loading: oddsLoading } = useQuery(GET_FIXTURE_ODDS, {
+  const { data: oddsData } = useQuery(GET_FIXTURE_ODDS, {
     variables: { fixtureId: fixture.id },
   })
 
@@ -58,7 +57,7 @@ export function ModelTab({ fixture }: ModelTabProps) {
   const baseXgAway = fixture.xgAway ?? estimateXg(fixture, 'away')
 
   // Estimate xG based on available data
-  function estimateXg(fixture: any, side: 'home' | 'away'): number {
+  function estimateXg(_fixture: any, side: 'home' | 'away'): number {
     // Use historical average goals if available
     if (side === 'home') {
       return 1.55 // Premier League home avg
@@ -81,70 +80,51 @@ export function ModelTab({ fixture }: ModelTabProps) {
   }, [baseXgAway, awayKeyPlayerOut])
 
   // Calculate probabilities
-  const probs1X2 = useMemo(() => 
+  const probs1X2 = useMemo(() =>
     calculate1X2Probabilities(adjustedXgHome, adjustedXgAway),
     [adjustedXgHome, adjustedXgAway]
   )
 
-  const probsOU25 = useMemo(() => 
+  const probsOU25 = useMemo(() =>
     calculateOverUnderProbabilities(adjustedXgHome, adjustedXgAway, 2.5),
     [adjustedXgHome, adjustedXgAway]
   )
 
-  const probsBTTS = useMemo(() => 
+  const probsBTTS = useMemo(() =>
     calculateBTTSProbabilities(adjustedXgHome, adjustedXgAway),
     [adjustedXgHome, adjustedXgAway]
   )
 
   // Scoreline distribution
-  const scorelineDistribution = useMemo(() => 
+  const scorelineDistribution = useMemo(() =>
     generateScorelineDistribution(adjustedXgHome, adjustedXgAway),
     [adjustedXgHome, adjustedXgAway]
   )
 
-  // Calculate edge for each market
-  const edges = useMemo(() => ({
-    home: probs1X2.home - marketProbs.home,
-    draw: probs1X2.draw - marketProbs.draw,
-    away: probs1X2.away - marketProbs.away,
-    over25: probsOU25.over - marketProbs.over25,
-    bttsYes: probsBTTS.yes - marketProbs.bttsYes,
-  }), [probs1X2, probsOU25, probsBTTS, marketProbs])
-
-  // Best bet detection
-  const bestBet = useMemo(() => {
-    const options = [
-      { label: fixture.homeTeam.name, edge: edges.home, prob: probs1X2.home },
-      { label: 'Draw', edge: edges.draw, prob: probs1X2.draw },
-      { label: fixture.awayTeam.name, edge: edges.away, prob: probs1X2.away },
-      { label: 'Over 2.5', edge: edges.over25, prob: probsOU25.over },
-    ]
-    return options.reduce((best, curr) => curr.edge > best.edge ? curr : best)
-  }, [edges, probs1X2, probsOU25, fixture])
 
   // Edge drivers (what makes model different from market)
   const edgeDrivers = [
-    { 
-      factor: 'Team Strength', 
-      direction: 'home' as const, 
+    {
+      factor: 'Team Strength',
+      direction: 'home' as const,
       impact: 0.04,
       explanation: 'Home team xG-adjusted rating 8% above league average'
     },
-    { 
-      factor: 'Rest Advantage', 
-      direction: 'home' as const, 
+    {
+      factor: 'Rest Advantage',
+      direction: 'home' as const,
       impact: 0.02,
       explanation: 'Home team has 2 extra rest days vs away'
     },
-    { 
-      factor: 'Key Absences', 
-      direction: 'away' as const, 
+    {
+      factor: 'Key Absences',
+      direction: 'away' as const,
       impact: -0.03,
       explanation: 'Home striker injury reduces expected goal output'
     },
-    { 
-      factor: 'H2H Trend', 
-      direction: 'home' as const, 
+    {
+      factor: 'H2H Trend',
+      direction: 'home' as const,
       impact: 0.02,
       explanation: 'Home team won 6 of last 8 meetings'
     },
@@ -166,17 +146,17 @@ export function ModelTab({ fixture }: ModelTabProps) {
 
         {/* 1X2 */}
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <ModelVsMarket 
+          <ModelVsMarket
             label={fixture.homeTeam.name.split(' ')[0]}
             modelProb={probs1X2.home}
             marketProb={marketProbs.home}
           />
-          <ModelVsMarket 
+          <ModelVsMarket
             label="Draw"
             modelProb={probs1X2.draw}
             marketProb={marketProbs.draw}
           />
-          <ModelVsMarket 
+          <ModelVsMarket
             label={fixture.awayTeam.name.split(' ')[0]}
             modelProb={probs1X2.away}
             marketProb={marketProbs.away}
@@ -185,12 +165,12 @@ export function ModelTab({ fixture }: ModelTabProps) {
 
         {/* O/U and BTTS */}
         <div className="grid grid-cols-2 gap-3 pt-3 border-t border-terminal-border/50">
-          <ModelVsMarket 
+          <ModelVsMarket
             label="Over 2.5"
             modelProb={probsOU25.over}
             marketProb={marketProbs.over25}
           />
-          <ModelVsMarket 
+          <ModelVsMarket
             label="BTTS Yes"
             modelProb={probsBTTS.yes}
             marketProb={marketProbs.bttsYes}
@@ -206,11 +186,11 @@ export function ModelTab({ fixture }: ModelTabProps) {
         </h4>
         <div className="grid grid-cols-3 gap-2">
           {scorelineDistribution.slice(0, 9).map((score, i) => (
-            <div 
+            <div
               key={i}
               className={cn(
                 "p-2 rounded text-center",
-                i === 0 
+                i === 0
                   ? "bg-accent-primary/20 border border-accent-primary/30"
                   : "bg-terminal-elevated"
               )}
@@ -249,7 +229,7 @@ export function ModelTab({ fixture }: ModelTabProps) {
           <Sliders className="w-4 h-4 text-accent-cyan" />
           Scenario Engine
         </h4>
-        
+
         <div className="space-y-4">
           {/* Toggle scenarios */}
           <div className="space-y-2">
@@ -453,7 +433,7 @@ function ScenarioToggle({ label, description, enabled, onToggle }: ScenarioToggl
       onClick={onToggle}
       className={cn(
         "w-full p-2 rounded-lg flex items-center justify-between text-left transition-all",
-        enabled 
+        enabled
           ? "bg-accent-primary/20 border border-accent-primary/30"
           : "bg-terminal-elevated hover:bg-terminal-elevated/80"
       )}

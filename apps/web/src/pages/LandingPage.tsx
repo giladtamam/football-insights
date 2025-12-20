@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import {
   Zap,
@@ -9,8 +9,6 @@ import {
   TrendingUp,
   Users,
   Shield,
-  Clock,
-  ChevronRight,
   CheckCircle2,
   Play,
   Star,
@@ -18,8 +16,6 @@ import {
   Sparkles,
   LineChart,
   Calculator,
-  BookOpen,
-  Layers,
   Radio,
 } from 'lucide-react'
 
@@ -139,9 +135,7 @@ const PRICING = [
 ]
 
 export function LandingPage() {
-  const [activeFeature, setActiveFeature] = useState(0)
-  const { scrollYProgress } = useScroll()
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%'])
+  const [_, setActiveFeature] = useState(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -158,7 +152,7 @@ export function LandingPage() {
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px] animate-pulse delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-500/5 rounded-full blur-[150px]" />
         {/* Grid pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
@@ -178,7 +172,7 @@ export function LandingPage() {
               Football<span className="text-emerald-400">Insights</span>
             </span>
           </div>
-          
+
           <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
@@ -186,7 +180,7 @@ export function LandingPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link 
+            <Link
               to="/app"
               className="px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors"
             >
@@ -231,7 +225,7 @@ export function LandingPage() {
             </h1>
 
             <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Professional-grade analytics, live odds comparison, and AI predictions. 
+              Professional-grade analytics, live odds comparison, and AI predictions.
               Everything you need to make data-driven decisions in one powerful terminal.
             </p>
 
@@ -287,7 +281,7 @@ export function LandingPage() {
                     <div className="px-3 py-1.5 bg-white/5 rounded text-xs text-gray-400">Results</div>
                   </div>
                   <div className="space-y-2">
-                    {[1,2,3,4].map((i) => (
+                    {[1, 2, 3, 4].map((i) => (
                       <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-white/10 rounded" />
@@ -405,7 +399,7 @@ export function LandingPage() {
                 </span>
               </h2>
               <p className="text-gray-400 text-lg mb-8 leading-relaxed">
-                Our terminal-style interface puts the power of professional analytics at your fingertips. 
+                Our terminal-style interface puts the power of professional analytics at your fingertips.
                 Navigate through matches, compare odds, and track your research with keyboard shortcuts and a sleek, distraction-free UI.
               </p>
               <div className="space-y-4">
@@ -422,7 +416,7 @@ export function LandingPage() {
                 ))}
               </div>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -540,11 +534,10 @@ export function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 viewport={{ once: true }}
-                className={`relative p-6 rounded-2xl ${
-                  plan.popular 
-                    ? 'bg-gradient-to-b from-emerald-500/10 to-cyan-500/10 border-2 border-emerald-500/30' 
-                    : 'bg-white/[0.03] border border-white/5'
-                }`}
+                className={`relative p-6 rounded-2xl ${plan.popular
+                  ? 'bg-gradient-to-b from-emerald-500/10 to-cyan-500/10 border-2 border-emerald-500/30'
+                  : 'bg-white/[0.03] border border-white/5'
+                  }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full text-xs font-medium">
@@ -569,11 +562,10 @@ export function LandingPage() {
                 </ul>
                 <Link
                   to="/app"
-                  className={`block w-full py-3 text-center rounded-xl font-medium transition-all ${
-                    plan.popular
-                      ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 hover:shadow-lg hover:shadow-emerald-500/25'
-                      : 'bg-white/10 hover:bg-white/20'
-                  }`}
+                  className={`block w-full py-3 text-center rounded-xl font-medium transition-all ${plan.popular
+                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 hover:shadow-lg hover:shadow-emerald-500/25'
+                    : 'bg-white/10 hover:bg-white/20'
+                    }`}
                 >
                   {plan.cta}
                 </Link>

@@ -44,3 +44,4 @@ EXPOSE 4000
 # Start the API
 CMD ["node", "apps/api/dist/server.js"]
 
+

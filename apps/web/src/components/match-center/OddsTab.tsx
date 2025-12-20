@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client'
-import { 
+import {
   TrendingUp,
   TrendingDown,
   Minus,
@@ -11,11 +11,11 @@ import {
   RefreshCw,
   Loader2,
 } from 'lucide-react'
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
   ResponsiveContainer,
   Tooltip,
 } from 'recharts'
@@ -39,7 +39,7 @@ export function OddsTab({ fixture }: OddsTabProps) {
   })
 
   // Fetch historical odds
-  const { data: historyData, loading: historyLoading } = useQuery(GET_ODDS_HISTORY, {
+  const { data: historyData } = useQuery(GET_ODDS_HISTORY, {
     variables: { fixtureId: fixture.id, market: '1X2' },
   })
 
@@ -49,7 +49,7 @@ export function OddsTab({ fixture }: OddsTabProps) {
   // Process bookmakers data for display
   const processedBookmakers = useMemo(() => {
     if (!liveOdds?.bookmakers) return []
-    
+
     return liveOdds.bookmakers
       .filter((b: any) => b.h2h)
       .map((b: any) => ({
@@ -76,7 +76,7 @@ export function OddsTab({ fixture }: OddsTabProps) {
   // Calculate margin
   function calculateMargin(home: number, draw: number, away: number): number {
     if (!home || !draw || !away) return 0
-    return ((1/home + 1/draw + 1/away) - 1) * 100
+    return ((1 / home + 1 / draw + 1 / away) - 1) * 100
   }
 
   // Prepare chart data from history
@@ -112,7 +112,7 @@ export function OddsTab({ fixture }: OddsTabProps) {
         overround: 0.04,
       }
     }
-    
+
     const { home, draw, away } = liveOdds.consensus
     const rawProbs = [
       oddsToImpliedProb(home || 2.0),
@@ -175,7 +175,7 @@ export function OddsTab({ fixture }: OddsTabProps) {
             </button>
           ))}
         </div>
-        <button 
+        <button
           onClick={() => refetchOdds()}
           className="p-1.5 text-text-muted hover:text-accent-primary transition-colors"
           title="Refresh odds"
@@ -216,7 +216,7 @@ export function OddsTab({ fixture }: OddsTabProps) {
                 impliedProb={impliedProbs.fair.away}
               />
             </div>
-            
+
             <div className="flex items-center justify-between pt-3 border-t border-terminal-border/50 text-xs text-text-muted">
               <span>Market Overround: {(impliedProbs.overround * 100).toFixed(1)}%</span>
               <span className="flex items-center gap-1">
@@ -235,12 +235,12 @@ export function OddsTab({ fixture }: OddsTabProps) {
             <div className="h-40">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
-                  <XAxis 
-                    dataKey="time" 
+                  <XAxis
+                    dataKey="time"
                     stroke="#6e7681"
                     tick={{ fontSize: 10 }}
                   />
-                  <YAxis 
+                  <YAxis
                     stroke="#6e7681"
                     tick={{ fontSize: 10 }}
                     domain={['dataMin - 0.2', 'dataMax + 0.2']}
@@ -253,26 +253,26 @@ export function OddsTab({ fixture }: OddsTabProps) {
                       fontSize: '12px',
                     }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="home" 
-                    stroke="#58a6ff" 
+                  <Line
+                    type="monotone"
+                    dataKey="home"
+                    stroke="#58a6ff"
                     dot={false}
                     strokeWidth={2}
                     name="Home"
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="draw" 
-                    stroke="#6e7681" 
+                  <Line
+                    type="monotone"
+                    dataKey="draw"
+                    stroke="#6e7681"
                     dot={false}
                     strokeWidth={2}
                     name="Draw"
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="away" 
-                    stroke="#a371f7" 
+                  <Line
+                    type="monotone"
+                    dataKey="away"
+                    stroke="#a371f7"
                     dot={false}
                     strokeWidth={2}
                     name="Away"
@@ -280,20 +280,20 @@ export function OddsTab({ fixture }: OddsTabProps) {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            
+
             {/* Movement Summary */}
             <div className="flex items-center justify-center gap-6 mt-2">
-              <MovementIndicator 
+              <MovementIndicator
                 label="Home"
                 opening={openingOdds.home}
                 current={currentOdds.home || 2.10}
               />
-              <MovementIndicator 
+              <MovementIndicator
                 label="Draw"
                 opening={openingOdds.draw}
                 current={currentOdds.draw || 3.40}
               />
-              <MovementIndicator 
+              <MovementIndicator
                 label="Away"
                 opening={openingOdds.away}
                 current={currentOdds.away || 3.60}
@@ -314,7 +314,7 @@ export function OddsTab({ fixture }: OddsTabProps) {
                   {showAllBookmakers ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 </button>
               </div>
-              
+
               {/* Header */}
               <div className="flex items-center gap-2 text-[10px] text-text-muted mb-2 pb-2 border-b border-terminal-border/30">
                 <span className="w-24">Bookmaker</span>
@@ -325,13 +325,13 @@ export function OddsTab({ fixture }: OddsTabProps) {
                 </div>
                 <span className="w-12 text-right">Margin</span>
               </div>
-              
+
               <div className="space-y-2">
                 {(showAllBookmakers ? processedBookmakers : processedBookmakers.slice(0, 4)).map((bookie: any, i: number) => {
                   const bestHome = bookie.home === Math.max(...processedBookmakers.map((b: any) => b.home))
                   const bestDraw = bookie.draw === Math.max(...processedBookmakers.map((b: any) => b.draw))
                   const bestAway = bookie.away === Math.max(...processedBookmakers.map((b: any) => b.away))
-                  
+
                   return (
                     <div key={i} className="flex items-center gap-2 text-xs">
                       <span className="w-24 text-text-muted truncate">{bookie.name}</span>
@@ -376,17 +376,17 @@ export function OddsTab({ fixture }: OddsTabProps) {
           <div className="stat-card">
             <h4 className="text-sm font-semibold mb-3">Fair Probability (Overround Removed)</h4>
             <div className="space-y-3">
-              <ProbabilityBar 
+              <ProbabilityBar
                 label={fixture.homeTeam.name}
                 probability={impliedProbs.fair.home}
                 color="bg-accent-primary"
               />
-              <ProbabilityBar 
+              <ProbabilityBar
                 label="Draw"
                 probability={impliedProbs.fair.draw}
                 color="bg-gray-500"
               />
-              <ProbabilityBar 
+              <ProbabilityBar
                 label={fixture.awayTeam.name}
                 probability={impliedProbs.fair.away}
                 color="bg-accent-secondary"
@@ -522,7 +522,7 @@ function ProbabilityBar({ label, probability, color }: ProbabilityBarProps) {
         <span className="font-medium">{(probability * 100).toFixed(1)}%</span>
       </div>
       <div className="h-2 bg-terminal-elevated rounded-full overflow-hidden">
-        <div 
+        <div
           className={cn("h-full rounded-full transition-all duration-500", color)}
           style={{ width: `${probability * 100}%` }}
         />

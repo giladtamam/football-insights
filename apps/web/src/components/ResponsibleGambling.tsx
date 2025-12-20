@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
+import {
   Clock,
   AlertTriangle,
   X,
@@ -10,28 +10,27 @@ import {
   Info,
   Pause,
   Timer,
-  ChevronRight,
 } from 'lucide-react'
 import { useAppStore } from '../lib/store'
 import { cn } from '../lib/utils'
 
 // Session Timer displayed in header
 export function SessionTimer() {
-  const { sessionStartTime, sessionDurationWarningMinutes, updateSessionTime, totalSessionTime } = useAppStore()
+  const { sessionStartTime, sessionDurationWarningMinutes, updateSessionTime } = useAppStore()
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
     if (!sessionStartTime) return
-    
+
     const interval = setInterval(() => {
       const mins = Math.floor((Date.now() - sessionStartTime) / 60000)
       setElapsed(mins)
       updateSessionTime()
     }, 60000) // Update every minute
-    
+
     // Initial update
     setElapsed(Math.floor((Date.now() - sessionStartTime) / 60000))
-    
+
     return () => clearInterval(interval)
   }, [sessionStartTime, updateSessionTime])
 
@@ -44,8 +43,8 @@ export function SessionTimer() {
   return (
     <div className={cn(
       "flex items-center gap-1.5 px-2 py-1 rounded text-xs",
-      isWarning 
-        ? "bg-accent-warning/20 text-accent-warning animate-pulse" 
+      isWarning
+        ? "bg-accent-warning/20 text-accent-warning animate-pulse"
         : "bg-terminal-elevated text-text-muted"
     )}>
       <Clock className="w-3.5 h-3.5" />
@@ -135,12 +134,11 @@ export function DisclaimerModal() {
 
 // Full Responsible Gambling Modal
 export function ResponsibleGamblingModal() {
-  const { 
-    showResponsibleGamblingModal, 
+  const {
+    showResponsibleGamblingModal,
     setShowResponsibleGamblingModal,
     sessionStartTime,
     sessionDurationWarningMinutes,
-    totalSessionTime,
   } = useAppStore()
 
   const [breakTaken, setBreakTaken] = useState(false)
@@ -197,15 +195,15 @@ export function ResponsibleGamblingModal() {
                   {hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`}
                 </div>
                 <div className="text-xs text-text-muted">
-                  {elapsed >= sessionDurationWarningMinutes 
-                    ? "Consider taking a break" 
+                  {elapsed >= sessionDurationWarningMinutes
+                    ? "Consider taking a break"
                     : `Warning at ${sessionDurationWarningMinutes} minutes`}
                 </div>
               </div>
-              
+
               {/* Progress bar */}
               <div className="mt-4 h-2 bg-terminal-elevated rounded-full overflow-hidden">
-                <div 
+                <div
                   className={cn(
                     "h-full transition-all rounded-full",
                     elapsed >= sessionDurationWarningMinutes ? "bg-accent-warning" : "bg-accent-primary"
@@ -221,7 +219,7 @@ export function ResponsibleGamblingModal() {
                 onClick={() => setBreakTaken(true)}
                 className={cn(
                   "w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors",
-                  breakTaken 
+                  breakTaken
                     ? "bg-accent-success/20 text-accent-success"
                     : "bg-terminal-elevated hover:bg-terminal-muted"
                 )}
@@ -297,7 +295,7 @@ export function ResponsibleGamblingModal() {
               <Info className="w-5 h-5 text-accent-primary flex-shrink-0" />
               <div className="text-xs text-text-secondary">
                 <p className="mb-2">
-                  <strong>Remember:</strong> This platform is for research and information only. 
+                  <strong>Remember:</strong> This platform is for research and information only.
                   No betting is conducted through this tool.
                 </p>
                 <p>
@@ -330,17 +328,17 @@ export function SessionWarningToast() {
 
   useEffect(() => {
     if (!sessionStartTime || dismissed) return
-    
+
     const checkTime = () => {
       const elapsed = Math.floor((Date.now() - sessionStartTime) / 60000)
       if (elapsed >= sessionDurationWarningMinutes && !showWarning) {
         setShowWarning(true)
       }
     }
-    
+
     const interval = setInterval(checkTime, 30000) // Check every 30 seconds
     checkTime() // Initial check
-    
+
     return () => clearInterval(interval)
   }, [sessionStartTime, sessionDurationWarningMinutes, dismissed, showWarning])
 

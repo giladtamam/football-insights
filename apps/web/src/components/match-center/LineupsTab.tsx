@@ -1,7 +1,6 @@
 import { useQuery } from '@apollo/client'
-import { 
+import {
   Users,
-  AlertTriangle,
   CheckCircle,
   HelpCircle,
   Loader2,
@@ -15,7 +14,7 @@ interface LineupsTabProps {
 }
 
 export function LineupsTab({ fixture }: LineupsTabProps) {
-  const { data, loading, error, refetch } = useQuery(GET_FIXTURE_LINEUPS, {
+  const { data, loading, refetch } = useQuery(GET_FIXTURE_LINEUPS, {
     variables: { fixtureId: fixture.id },
     fetchPolicy: 'cache-and-network',
   })
@@ -26,13 +25,13 @@ export function LineupsTab({ fixture }: LineupsTabProps) {
 
   const lineups = data?.fixtureLineups || []
   const events = eventsData?.fixtureEvents || []
-  
+
   // Get substitution events
   const substitutions = events.filter((e: any) => e.type === 'subst')
-  
+
   const homeLineup = lineups[0]
   const awayLineup = lineups[1]
-  
+
   const isConfirmed = fixture.isFinished || fixture.statusShort === 'LIVE' || lineups.length > 0
 
   if (loading && !data) {
@@ -51,11 +50,11 @@ export function LineupsTab({ fixture }: LineupsTabProps) {
           <HelpCircle className="w-10 h-10 text-text-muted mx-auto mb-3" />
           <h3 className="text-lg font-semibold mb-2">Lineups Not Available</h3>
           <p className="text-sm text-text-secondary mb-4">
-            {fixture.isUpcoming 
+            {fixture.isUpcoming
               ? "Lineups will be available closer to kick-off (usually 1 hour before)"
               : "Lineup data is not available for this fixture"}
           </p>
-          <button 
+          <button
             onClick={() => refetch()}
             className="inline-flex items-center gap-2 px-4 py-2 bg-terminal-elevated hover:bg-terminal-muted rounded-lg text-sm transition-colors"
           >
@@ -72,7 +71,7 @@ export function LineupsTab({ fixture }: LineupsTabProps) {
       {/* Lineup Status Banner */}
       <div className={cn(
         "p-3 rounded-lg flex items-center justify-between text-sm",
-        isConfirmed 
+        isConfirmed
           ? "bg-accent-success/20 text-accent-success"
           : "bg-accent-warning/20 text-accent-warning"
       )}>
@@ -89,7 +88,7 @@ export function LineupsTab({ fixture }: LineupsTabProps) {
             </>
           )}
         </div>
-        <button 
+        <button
           onClick={() => refetch()}
           className="p-1 hover:bg-white/10 rounded transition-colors"
         >
@@ -121,7 +120,7 @@ export function LineupsTab({ fixture }: LineupsTabProps) {
             isHome
           />
         )}
-        
+
         {/* Away Team */}
         {awayLineup && (
           <LineupColumn
@@ -140,9 +139,9 @@ export function LineupsTab({ fixture }: LineupsTabProps) {
             <div className="text-[10px] text-text-muted uppercase mb-1">Manager</div>
             <div className="flex items-center gap-2">
               {homeLineup?.coach?.photo && (
-                <img 
-                  src={homeLineup.coach.photo} 
-                  alt="" 
+                <img
+                  src={homeLineup.coach.photo}
+                  alt=""
                   className="w-8 h-8 rounded-full object-cover"
                 />
               )}
@@ -153,9 +152,9 @@ export function LineupsTab({ fixture }: LineupsTabProps) {
             <div className="text-[10px] text-text-muted uppercase mb-1">Manager</div>
             <div className="flex items-center gap-2">
               {awayLineup?.coach?.photo && (
-                <img 
-                  src={awayLineup.coach.photo} 
-                  alt="" 
+                <img
+                  src={awayLineup.coach.photo}
+                  alt=""
                   className="w-8 h-8 rounded-full object-cover"
                 />
               )}
@@ -180,7 +179,7 @@ interface LineupColumnProps {
   isHome?: boolean
 }
 
-function LineupColumn({ teamName, teamLogo, lineup, substitutions, isHome }: LineupColumnProps) {
+function LineupColumn({ teamName, teamLogo, lineup, substitutions }: LineupColumnProps) {
   // Map position codes to readable names
   const positionMap: Record<string, string> = {
     'G': 'GK',

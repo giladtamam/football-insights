@@ -8,7 +8,6 @@ import {
   Edit3,
   Check,
   X,
-  ChevronDown,
   Loader2,
   Bookmark,
   Play,
@@ -63,7 +62,7 @@ const TIME_WINDOWS = [
 export function SavedScreens({ onApplyScreen }: SavedScreensProps) {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingScreen, setEditingScreen] = useState<SavedScreen | null>(null)
-  
+
   // Form state
   const [screenName, setScreenName] = useState('')
   const [selectedLeagues, setSelectedLeagues] = useState<number[]>([])
@@ -86,7 +85,7 @@ export function SavedScreens({ onApplyScreen }: SavedScreensProps) {
     const filters: SavedScreen['filters'] = {
       timeWindow,
     }
-    
+
     if (selectedLeagues.length > 0) filters.leagueIds = selectedLeagues
     if (minOdds !== undefined) filters.minOdds = minOdds
     if (maxOdds !== undefined) filters.maxOdds = maxOdds
@@ -111,7 +110,7 @@ export function SavedScreens({ onApplyScreen }: SavedScreensProps) {
     const filters: SavedScreen['filters'] = {
       timeWindow,
     }
-    
+
     if (selectedLeagues.length > 0) filters.leagueIds = selectedLeagues
     if (minOdds !== undefined) filters.minOdds = minOdds
     if (maxOdds !== undefined) filters.maxOdds = maxOdds
@@ -142,7 +141,7 @@ export function SavedScreens({ onApplyScreen }: SavedScreensProps) {
       setSelectedLeague(screen.filters.leagueIds[0])
     }
     setActiveTab('fixtures')
-    
+
     // Call parent callback if provided
     if (onApplyScreen) {
       onApplyScreen(screen.filters)
@@ -172,45 +171,45 @@ export function SavedScreens({ onApplyScreen }: SavedScreensProps) {
 
   const getFilterSummary = (filters: SavedScreen['filters']) => {
     const parts: string[] = []
-    
+
     if (filters.leagueIds?.length) {
       const leagueNames = filters.leagueIds
         .map(id => TOP_LEAGUES.find(l => l.id === id)?.name)
         .filter(Boolean)
-      parts.push(leagueNames.length > 2 
-        ? `${leagueNames.slice(0, 2).join(', ')} +${leagueNames.length - 2}` 
+      parts.push(leagueNames.length > 2
+        ? `${leagueNames.slice(0, 2).join(', ')} +${leagueNames.length - 2}`
         : leagueNames.join(', '))
     }
-    
+
     if (filters.minOdds || filters.maxOdds) {
-      const odds = filters.minOdds && filters.maxOdds 
-        ? `${filters.minOdds}-${filters.maxOdds}` 
-        : filters.minOdds 
-          ? `>${filters.minOdds}` 
+      const odds = filters.minOdds && filters.maxOdds
+        ? `${filters.minOdds}-${filters.maxOdds}`
+        : filters.minOdds
+          ? `>${filters.minOdds}`
           : `<${filters.maxOdds}`
       parts.push(`Odds: ${odds}`)
     }
-    
+
     if (filters.valueThreshold) {
       parts.push(`Value ≥${filters.valueThreshold}%`)
     }
-    
+
     if (filters.formFilter) {
       const form = FORM_FILTERS.find(f => f.id === filters.formFilter)
       if (form) parts.push(form.label)
     }
-    
+
     if (filters.timeWindow) {
       const time = TIME_WINDOWS.find(t => t.id === filters.timeWindow)
       if (time) parts.push(time.label)
     }
-    
+
     return parts.length > 0 ? parts.join(' • ') : 'No filters'
   }
 
   const toggleLeague = (id: number) => {
-    setSelectedLeagues(prev => 
-      prev.includes(id) 
+    setSelectedLeagues(prev =>
+      prev.includes(id)
         ? prev.filter(l => l !== id)
         : [...prev, id]
     )
@@ -264,7 +263,7 @@ export function SavedScreens({ onApplyScreen }: SavedScreensProps) {
                   <div className="p-2 rounded-lg bg-accent-primary/20">
                     <Star className="w-4 h-4 text-accent-primary" />
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium mb-0.5">{screen.name}</div>
                     <p className="text-xs text-text-muted truncate">

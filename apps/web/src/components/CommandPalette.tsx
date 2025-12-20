@@ -1,16 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
+import {
   Search,
   Calendar,
   Radio,
   History,
   Trophy,
   TrendingUp,
-  Sparkles,
-  Command,
   ArrowRight,
-  Settings,
   Clock,
   Star,
   X,
@@ -29,15 +26,15 @@ interface CommandItem {
 }
 
 export function CommandPalette() {
-  const { 
-    showCommandPalette, 
+  const {
+    showCommandPalette,
     setShowCommandPalette,
     setSelectedLeague,
     setActiveTab,
     setShowResponsibleGamblingModal,
     favoriteLeagueIds,
   } = useAppStore()
-  
+
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -112,7 +109,7 @@ export function CommandPalette() {
   const filteredCommands = useMemo(() => {
     if (!query) return commands
     const lowerQuery = query.toLowerCase()
-    return commands.filter(cmd => 
+    return commands.filter(cmd =>
       cmd.label.toLowerCase().includes(lowerQuery) ||
       cmd.description?.toLowerCase().includes(lowerQuery)
     )
@@ -215,7 +212,7 @@ export function CommandPalette() {
                 {['navigation', 'league', 'action'].map(category => {
                   const categoryCommands = filteredCommands.filter(c => c.category === category)
                   if (categoryCommands.length === 0) return null
-                  
+
                   return (
                     <div key={category} className="mb-2 last:mb-0">
                       <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-text-muted">

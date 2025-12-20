@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery } from '@apollo/client'
-import { 
+import {
   X,
   Clock,
   MapPin,
@@ -13,15 +13,13 @@ import {
   Calculator,
   FileText,
   History,
-  ChevronRight,
   AlertTriangle,
-  Zap,
   Shield,
   Swords,
 } from 'lucide-react'
-import { GET_FIXTURE, GET_HEAD_TO_HEAD, GET_TEAM_FIXTURES } from '../graphql/queries'
+import { GET_FIXTURE } from '../graphql/queries'
 import { useAppStore } from '../lib/store'
-import { cn, formatDate, formatTime, getStatusText, isLiveStatus, getFormColor } from '../lib/utils'
+import { cn, formatDate, formatTime, getStatusText, isLiveStatus } from '../lib/utils'
 import { OverviewTab } from './match-center/OverviewTab'
 import { LineupsTab } from './match-center/LineupsTab'
 import { StatsTab } from './match-center/StatsTab'
@@ -43,36 +41,36 @@ export function MatchCenter() {
   })
 
   // Use live fixture data if available, otherwise use database data
-  const fixture = selectedLiveFixture 
+  const fixture = selectedLiveFixture
     ? {
-        id: selectedLiveFixture.id,
-        date: selectedLiveFixture.date,
-        timestamp: selectedLiveFixture.timestamp,
-        status: selectedLiveFixture.status,
-        statusShort: selectedLiveFixture.statusShort,
-        elapsed: selectedLiveFixture.elapsed,
-        round: selectedLiveFixture.round,
-        goalsHome: selectedLiveFixture.goalsHome,
-        goalsAway: selectedLiveFixture.goalsAway,
-        xgHome: null,
-        xgAway: null,
-        isLive: true,
-        isFinished: false,
-        isUpcoming: false,
-        venue: null,
-        referee: null,
-        homeTeam: selectedLiveFixture.homeTeam,
-        awayTeam: selectedLiveFixture.awayTeam,
-        season: {
-          id: 0,
-          league: {
-            id: selectedLiveFixture.league.id,
-            name: selectedLiveFixture.league.name,
-            logo: selectedLiveFixture.league.logo,
-            country: { name: selectedLiveFixture.league.country, flag: null },
-          },
+      id: selectedLiveFixture.id,
+      date: selectedLiveFixture.date,
+      timestamp: selectedLiveFixture.timestamp,
+      status: selectedLiveFixture.status,
+      statusShort: selectedLiveFixture.statusShort,
+      elapsed: selectedLiveFixture.elapsed,
+      round: selectedLiveFixture.round,
+      goalsHome: selectedLiveFixture.goalsHome,
+      goalsAway: selectedLiveFixture.goalsAway,
+      xgHome: null,
+      xgAway: null,
+      isLive: true,
+      isFinished: false,
+      isUpcoming: false,
+      venue: null,
+      referee: null,
+      homeTeam: selectedLiveFixture.homeTeam,
+      awayTeam: selectedLiveFixture.awayTeam,
+      season: {
+        id: 0,
+        league: {
+          id: selectedLiveFixture.league.id,
+          name: selectedLiveFixture.league.name,
+          logo: selectedLiveFixture.league.logo,
+          country: { name: selectedLiveFixture.league.country, flag: null },
         },
-      }
+      },
+    }
     : data?.fixture
 
   const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [

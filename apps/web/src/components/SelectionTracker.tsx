@@ -3,9 +3,6 @@ import { useMutation, useQuery } from '@apollo/client'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Target,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
   BarChart3,
   Plus,
   Trash2,
@@ -13,9 +10,7 @@ import {
   X,
   Clock,
   Calendar,
-  ChevronDown,
   Loader2,
-  Percent,
   Trophy,
   XCircle,
   CircleDot,
@@ -68,7 +63,7 @@ type ResultFilter = 'all' | 'pending' | 'win' | 'lose'
 export function SelectionTracker() {
   const [resultFilter, setResultFilter] = useState<ResultFilter>('all')
   const [showAddModal, setShowAddModal] = useState(false)
-  
+
   // Form state for adding selection
   const [newSelection, setNewSelection] = useState({
     fixtureId: 0,
@@ -199,7 +194,7 @@ export function SelectionTracker() {
                 {stats.wins}W / {stats.losses}L
               </div>
             </div>
-            
+
             <div className="bg-surface-card rounded-lg p-2 border border-terminal-border">
               <div className="text-[10px] text-text-muted uppercase tracking-wide">P&L</div>
               <div className={cn(
@@ -212,7 +207,7 @@ export function SelectionTracker() {
                 Staked: {stats.totalStaked.toFixed(0)}
               </div>
             </div>
-            
+
             <div className="bg-surface-card rounded-lg p-2 border border-terminal-border">
               <div className="text-[10px] text-text-muted uppercase tracking-wide">ROI</div>
               <div className={cn(
@@ -225,7 +220,7 @@ export function SelectionTracker() {
                 Return on Investment
               </div>
             </div>
-            
+
             <div className="bg-surface-card rounded-lg p-2 border border-terminal-border">
               <div className="text-[10px] text-text-muted uppercase tracking-wide">Pending</div>
               <div className="text-lg font-mono font-bold text-accent-warning">
@@ -315,7 +310,7 @@ export function SelectionTracker() {
                                 {getSelectionLabel(selection.market, selection.selection)}
                               </span>
                               <span className="font-mono font-medium">
-                                @ {formatOdds(selection.odds, 'decimal')}
+                                @ {formatOdds(selection.odds)}
                               </span>
                               {selection.stake && (
                                 <span className="text-text-muted">
