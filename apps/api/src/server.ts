@@ -9,8 +9,8 @@ const yoga = createYoga<{}, Context>({
   schema,
   graphiql: true,
   cors: {
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
-    credentials: true,
+    origin: '*',  // Allow all origins (you can restrict this later)
+    credentials: false,
   },
   context: () => ({
     prisma,
