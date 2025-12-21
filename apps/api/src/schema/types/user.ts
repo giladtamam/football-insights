@@ -8,8 +8,6 @@ export const User = builder.prismaObject('User', {
     createdAt: t.expose('createdAt', { type: 'DateTime' }),
     updatedAt: t.expose('updatedAt', { type: 'DateTime' }),
     notes: t.relation('notes'),
-    favoriteTeams: t.relation('favoriteTeams'),
-    favoriteLeagues: t.relation('favoriteLeagues'),
   }),
 });
 

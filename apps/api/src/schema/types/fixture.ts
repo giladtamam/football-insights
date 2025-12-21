@@ -51,6 +51,8 @@ export const FixtureFilterInput = builder.inputType('FixtureFilterInput', {
     teamIds: t.intList({ required: false }),
     dateFrom: t.field({ type: 'DateTime', required: false }),
     dateTo: t.field({ type: 'DateTime', required: false }),
+    timestampFrom: t.int({ required: false }), // Unix timestamp (seconds)
+    timestampTo: t.int({ required: false }),   // Unix timestamp (seconds)
     status: t.stringList({ required: false }),
     live: t.boolean({ required: false }),
     upcoming: t.boolean({ required: false }),

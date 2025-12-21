@@ -138,8 +138,8 @@ export const GET_LEAGUE = gql`
 `;
 
 export const GET_FIXTURES = gql`
-  query GetFixtures($filter: FixtureFilterInput, $limit: Int, $offset: Int) {
-    fixtures(filter: $filter, limit: $limit, offset: $offset) {
+  query GetFixtures($filter: FixtureFilterInput, $limit: Int, $offset: Int, $orderDesc: Boolean) {
+    fixtures(filter: $filter, limit: $limit, offset: $offset, orderDesc: $orderDesc) {
       ...FixtureFields
     }
   }
@@ -313,8 +313,8 @@ export const GET_TEAM = gql`
 `;
 
 export const GET_TEAM_FIXTURES = gql`
-  query GetTeamFixtures($teamId: Int!, $limit: Int) {
-    fixtures(filter: { teamIds: [$teamId], finished: true }, limit: $limit) {
+  query GetTeamFixtures($teamId: Int!, $last: Int) {
+    teamFixtures(teamId: $teamId, last: $last) {
       ...FixtureFields
     }
   }

@@ -153,7 +153,23 @@ export function OddsTab({ fixture }: OddsTabProps) {
     )
   }
 
-  const currentOdds = liveOdds?.consensus || { home: 2.10, draw: 3.40, away: 3.60 }
+  // Only show real odds data - no fallbacks
+  if (!liveOdds || !liveOdds.consensus) {
+    return (
+      <div className="p-8 text-center">
+        <AlertCircle className="w-12 h-12 text-text-muted mx-auto mb-3" />
+        <h3 className="text-lg font-medium mb-1">No Odds Available</h3>
+        <p className="text-sm text-text-muted">
+          Real-time odds are not available for this fixture.
+        </p>
+        <p className="text-xs text-text-muted mt-2">
+          Odds are typically available for upcoming matches in major leagues.
+        </p>
+      </div>
+    )
+  }
+
+  const currentOdds = liveOdds.consensus
 
   return (
     <div className="p-4 space-y-4">
@@ -199,19 +215,19 @@ export function OddsTab({ fixture }: OddsTabProps) {
             <div className="grid grid-cols-3 gap-4 mb-4">
               <OddsCell
                 label={fixture.homeTeam.name}
-                currentOdds={currentOdds.home || 2.10}
+                currentOdds={currentOdds.home}
                 openingOdds={openingOdds.home}
                 impliedProb={impliedProbs.fair.home}
               />
               <OddsCell
                 label="Draw"
-                currentOdds={currentOdds.draw || 3.40}
+                currentOdds={currentOdds.draw}
                 openingOdds={openingOdds.draw}
                 impliedProb={impliedProbs.fair.draw}
               />
               <OddsCell
                 label={fixture.awayTeam.name}
-                currentOdds={currentOdds.away || 3.60}
+                currentOdds={currentOdds.away}
                 openingOdds={openingOdds.away}
                 impliedProb={impliedProbs.fair.away}
               />

@@ -5,7 +5,6 @@ import {
   Zap,
   Target,
   Shield,
-  Circle,
 } from 'lucide-react'
 import { cn, getFormColor, calculate1X2Probabilities, calculateOverUnderProbabilities } from '../../lib/utils'
 import { GET_FIXTURE_EVENTS, GET_TEAM_FIXTURES } from '../../graphql/queries'
@@ -102,12 +101,14 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
       items.push({ text: `${fixture.awayTeam.name} struggling (${awayLosses} losses in last 5)`, type: 'warning' })
     }
 
-    // Probability based
-    if (probsOU.over > 0.65) {
-      items.push({ text: `Model suggests ${(probsOU.over * 100).toFixed(0)}% chance of Over 2.5 goals`, type: 'primary' })
-    }
-    if (probs1X2.draw > 0.30) {
-      items.push({ text: `Higher than average draw probability (${(probs1X2.draw * 100).toFixed(0)}%)`, type: 'warning' })
+    // Probability based - only when real xG data exists
+    if (fixture.xgHome !== null && fixture.xgAway !== null) {
+      if (probsOU.over > 0.65) {
+        items.push({ text: `Model suggests ${(probsOU.over * 100).toFixed(0)}% chance of Over 2.5 goals`, type: 'primary' })
+      }
+      if (probs1X2.draw > 0.30) {
+        items.push({ text: `Higher than average draw probability (${(probs1X2.draw * 100).toFixed(0)}%)`, type: 'warning' })
+      }
     }
 
     return items.slice(0, 5) // Max 5 insights
@@ -117,12 +118,12 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
     <div className="p-4 space-y-4">
       {/* Match Events Timeline (for finished/live matches) */}
       {(fixture.isFinished || fixture.statusShort?.includes('H')) && events.length > 0 && (
-        <div className="stat-card">
+        <div className="rounded-lg p-4 glass">
           <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <Zap className="w-4 h-4 text-accent-warning" />
             Match Timeline
           </h4>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="space-y-2 max-h-48 overflow-y-scroll pr-2">
             {events.filter((e: any) => e.type === 'Goal' || e.type === 'Card').map((event: any, i: number) => (
               <div
                 key={i}
@@ -137,7 +138,7 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
                 </span>
                 {event.type === 'Goal' && (
                   <>
-                    <Circle className="w-4 h-4 text-accent-success fill-accent-success" />
+                    <span className="text-base leading-none">⚽</span>
                     <span className="font-medium">{event.playerName}</span>
                     {event.assistName && (
                       <span className="text-text-muted text-xs">
@@ -149,7 +150,7 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
                 {event.type === 'Card' && (
                   <>
                     <div className={cn(
-                      "w-3 h-4 rounded-sm",
+                      "w-3 h-4 rounded-sm flex-shrink-0",
                       event.detail === 'Yellow Card' && "bg-yellow-400",
                       event.detail === 'Red Card' && "bg-red-500",
                       event.detail === 'Second Yellow card' && "bg-yellow-400 border-2 border-red-500",
@@ -163,51 +164,53 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
         </div>
       )}
 
-      {/* Probability Summary Card */}
-      <div className="stat-card">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-semibold flex items-center gap-2">
-            <Target className="w-4 h-4 text-accent-primary" />
-            Expected Outcome
-          </h4>
-          <span className="text-[10px] text-text-muted bg-terminal-elevated px-2 py-0.5 rounded">
-            Poisson Model
-          </span>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <ProbabilityBar
-            label={fixture.homeTeam.name.split(' ')[0]}
-            probability={probs1X2.home}
-            color="success"
-          />
-          <ProbabilityBar
-            label="Draw"
-            probability={probs1X2.draw}
-            color="neutral"
-          />
-          <ProbabilityBar
-            label={fixture.awayTeam.name.split(' ')[0]}
-            probability={probs1X2.away}
-            color="danger"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-terminal-border/50">
-          <div className="text-center">
-            <div className="text-sm font-semibold text-accent-success">
-              {(probsOU.over * 100).toFixed(0)}%
-            </div>
-            <div className="text-[10px] text-text-muted">Over 2.5</div>
+      {/* Probability Summary Card - Only show when real xG data exists */}
+      {fixture.xgHome !== null && fixture.xgAway !== null && (
+        <div className="stat-card">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <Target className="w-4 h-4 text-accent-primary" />
+              Expected Outcome
+            </h4>
+            <span className="text-[10px] text-text-muted bg-terminal-elevated px-2 py-0.5 rounded">
+              Based on xG Data
+            </span>
           </div>
-          <div className="text-center">
-            <div className="text-sm font-semibold text-accent-danger">
-              {(probsOU.under * 100).toFixed(0)}%
+
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <ProbabilityBar
+              label={fixture.homeTeam.name.split(' ')[0]}
+              probability={probs1X2.home}
+              color="success"
+            />
+            <ProbabilityBar
+              label="Draw"
+              probability={probs1X2.draw}
+              color="neutral"
+            />
+            <ProbabilityBar
+              label={fixture.awayTeam.name.split(' ')[0]}
+              probability={probs1X2.away}
+              color="danger"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-terminal-border/50">
+            <div className="text-center">
+              <div className="text-sm font-semibold text-accent-success">
+                {(probsOU.over * 100).toFixed(0)}%
+              </div>
+              <div className="text-[10px] text-text-muted">Over 2.5</div>
             </div>
-            <div className="text-[10px] text-text-muted">Under 2.5</div>
+            <div className="text-center">
+              <div className="text-sm font-semibold text-accent-danger">
+                {(probsOU.under * 100).toFixed(0)}%
+              </div>
+              <div className="text-[10px] text-text-muted">Under 2.5</div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Form Comparison */}
       <div className="stat-card">
@@ -250,24 +253,26 @@ export function OverviewTab({ fixture }: OverviewTabProps) {
         </div>
       )}
 
-      {/* Scoreline Prediction */}
-      <div className="stat-card">
-        <h4 className="text-sm font-semibold mb-3">Most Likely Scorelines</h4>
-        <div className="grid grid-cols-3 gap-2">
-          {getMostLikelyScorelines(lambdaHome, lambdaAway).slice(0, 6).map((score, i) => (
-            <div
-              key={i}
-              className={cn(
-                "p-2 rounded text-center",
-                i === 0 ? "bg-accent-primary/20 border border-accent-primary/30" : "bg-terminal-elevated"
-              )}
-            >
-              <div className="text-lg font-bold">{score.home}-{score.away}</div>
-              <div className="text-[10px] text-text-muted">{(score.prob * 100).toFixed(1)}%</div>
-            </div>
-          ))}
+      {/* Scoreline Prediction - Only show when real xG data exists */}
+      {fixture.xgHome !== null && fixture.xgAway !== null && (
+        <div className="stat-card">
+          <h4 className="text-sm font-semibold mb-3">Most Likely Scorelines</h4>
+          <div className="grid grid-cols-3 gap-2">
+            {getMostLikelyScorelines(lambdaHome, lambdaAway).slice(0, 6).map((score, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "p-2 rounded text-center",
+                  i === 0 ? "bg-accent-primary/20 border border-accent-primary/30" : "bg-terminal-elevated"
+                )}
+              >
+                <div className="text-lg font-bold">{score.home}-{score.away}</div>
+                <div className="text-[10px] text-text-muted">{(score.prob * 100).toFixed(1)}%</div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Data Credibility */}
       <div className="stat-card border-accent-primary/20">

@@ -14,8 +14,6 @@ type PrismaTypes = {
   Standing: { Shape: Prisma.StandingGetPayload<{}>; Include: Prisma.StandingInclude; Where: Prisma.StandingWhereUniqueInput; Fields: string; ListRelations: string };
   MatchNote: { Shape: Prisma.MatchNoteGetPayload<{}>; Include: Prisma.MatchNoteInclude; Where: Prisma.MatchNoteWhereUniqueInput; Fields: string; ListRelations: string };
   User: { Shape: Prisma.UserGetPayload<{}>; Include: Prisma.UserInclude; Where: Prisma.UserWhereUniqueInput; Fields: string; ListRelations: string };
-  FavoriteTeam: { Shape: Prisma.FavoriteTeamGetPayload<{}>; Include: Prisma.FavoriteTeamInclude; Where: Prisma.FavoriteTeamWhereUniqueInput; Fields: string; ListRelations: string };
-  FavoriteLeague: { Shape: Prisma.FavoriteLeagueGetPayload<{}>; Include: Prisma.FavoriteLeagueInclude; Where: Prisma.FavoriteLeagueWhereUniqueInput; Fields: string; ListRelations: string };
 };
 
 export interface Context {

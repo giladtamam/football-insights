@@ -10,7 +10,6 @@ import './types/fixture-stats';
 import './types/standing';
 import './types/match-note';
 import './types/user';
-import './types/favorite';
 import './types/odds';
 import './types/lineup';
 // V2 types
@@ -32,6 +31,7 @@ import './queries/screens';
 import './queries/selections';
 
 // Import mutations
+import './mutations/auth';
 import './mutations/sync';
 import './mutations/notes';
 import './mutations/favorites';

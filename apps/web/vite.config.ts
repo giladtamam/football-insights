@@ -11,6 +11,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      'Cross-Origin-Embedder-Policy': 'unsafe-none',
+    },
     proxy: {
       '/graphql': {
         target: 'http://localhost:4000',
@@ -19,4 +23,3 @@ export default defineConfig({
     },
   },
 })
-

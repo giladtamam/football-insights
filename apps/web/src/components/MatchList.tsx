@@ -8,13 +8,15 @@ import {
   TrendingUp,
   Sparkles,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   AlertTriangle,
   Zap,
   Users,
   Trophy,
   Clock,
 } from 'lucide-react'
-import { GET_TODAY_FIXTURES, GET_LIVE_FIXTURES_FROM_API, GET_FIXTURES } from '../graphql/queries'
+import { GET_LIVE_FIXTURES_FROM_API, GET_FIXTURES } from '../graphql/queries'
 import { useAppStore, TOP_LEAGUES } from '../lib/store'
 import { cn, formatTime, formatDate, isLiveStatus, getStatusText } from '../lib/utils'
 import { StandingsTable } from './StandingsTable'
@@ -60,6 +62,13 @@ interface Fixture {
 
 type Tab = 'fixtures' | 'results' | 'live' | 'odds' | 'insights' | 'standings'
 
+// Helper to get start and end of a day in UTC
+function getDayBoundsUTC(date: Date) {
+  const start = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0))
+  const end = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999))
+  return { start, end }
+}
+
 export function MatchList() {
   const {
     activeTab,
@@ -71,9 +80,25 @@ export function MatchList() {
     showXg,
   } = useAppStore()
 
-  // Fetch fixtures based on active tab
-  const { data: todayData, loading: todayLoading } = useQuery(GET_TODAY_FIXTURES, {
-    variables: { leagueIds: selectedLeagueId ? [selectedLeagueId] : undefined },
+  // Selected date for fixtures tab
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+
+  const { start: dateFrom, end: dateTo } = getDayBoundsUTC(selectedDate)
+
+  // Convert to Unix timestamps (seconds) for filtering
+  const timestampFrom = Math.floor(dateFrom.getTime() / 1000)
+  const timestampTo = Math.floor(dateTo.getTime() / 1000)
+
+  // Fetch fixtures based on active tab and selected date
+  const { data: fixturesData, loading: fixturesLoading } = useQuery(GET_FIXTURES, {
+    variables: {
+      filter: {
+        timestampFrom,
+        timestampTo,
+        leagueIds: selectedLeagueId ? [selectedLeagueId] : undefined,
+      },
+      limit: 100,
+    },
     skip: activeTab !== 'fixtures',
   })
 
@@ -84,18 +109,23 @@ export function MatchList() {
     fetchPolicy: 'network-only', // Always fetch fresh data
   })
 
+  // Get timestamp for "now" to filter only past results
+  const nowTimestamp = useMemo(() => Math.floor(Date.now() / 1000), [])
+  
   const { data: resultsData, loading: resultsLoading } = useQuery(GET_FIXTURES, {
     variables: {
       filter: {
         finished: true,
         leagueIds: selectedLeagueId ? [selectedLeagueId] : undefined,
+        timestampTo: nowTimestamp, // Only show results before now
       },
       limit: 50,
+      orderDesc: true, // Show newest results first
     },
     skip: activeTab !== 'results',
   })
 
-  const loading = todayLoading || liveApiLoading || resultsLoading
+  const loading = fixturesLoading || liveApiLoading || resultsLoading
 
   // Transform live API data to match our Fixture interface
   const liveFixtures: Fixture[] = useMemo(() => {
@@ -135,15 +165,15 @@ export function MatchList() {
   const fixtures: Fixture[] = useMemo(() => {
     switch (activeTab) {
       case 'fixtures':
-        return todayData?.todayFixtures || []
+        return fixturesData?.fixtures || []
       case 'live':
         return liveFixtures
       case 'results':
         return resultsData?.fixtures || []
       default:
-        return todayData?.todayFixtures || []
+        return fixturesData?.fixtures || []
     }
-  }, [activeTab, todayData, liveFixtures, resultsData])
+  }, [activeTab, fixturesData, liveFixtures, resultsData])
 
   // Group fixtures by league
   const groupedFixtures = useMemo(() => {
@@ -185,6 +215,28 @@ export function MatchList() {
     { id: 'insights', label: 'Insights', icon: Sparkles },
   ]
 
+  // Date navigation helpers
+  const goToPreviousDay = () => {
+    const newDate = new Date(selectedDate)
+    newDate.setDate(newDate.getDate() - 1)
+    setSelectedDate(newDate)
+  }
+
+  const goToNextDay = () => {
+    const newDate = new Date(selectedDate)
+    newDate.setDate(newDate.getDate() + 1)
+    setSelectedDate(newDate)
+  }
+
+  const goToToday = () => {
+    setSelectedDate(new Date())
+  }
+
+  const isToday = (date: Date) => {
+    const today = new Date()
+    return date.toDateString() === today.toDateString()
+  }
+
   return (
     <div className="h-full flex flex-col">
       {/* Header with tabs */}
@@ -193,12 +245,48 @@ export function MatchList() {
           <h2 className="text-sm font-semibold font-display">
             {selectedLeagueId
               ? TOP_LEAGUES.find(l => l.id === selectedLeagueId)?.name || 'League Matches'
-              : "Today's Matches"
+              : isToday(selectedDate) ? "Today's Matches" : 'Matches'
             }
           </h2>
-          <span className="text-xs text-text-muted">
-            {formatDate(new Date(), { weekday: 'long', day: 'numeric', month: 'short' })}
-          </span>
+          
+          {/* Date Navigation - only show for fixtures tab */}
+          {activeTab === 'fixtures' && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={goToPreviousDay}
+                className="p-1.5 rounded hover:bg-terminal-elevated transition-colors text-text-muted hover:text-text-primary"
+                title="Previous day"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              
+              <button
+                onClick={goToToday}
+                className={cn(
+                  "px-2 py-1 rounded text-xs font-medium transition-colors",
+                  isToday(selectedDate)
+                    ? "bg-accent-primary/20 text-accent-primary"
+                    : "hover:bg-terminal-elevated text-text-secondary hover:text-text-primary"
+                )}
+              >
+                {formatDate(selectedDate, { weekday: 'short', day: 'numeric', month: 'short' })}
+              </button>
+              
+              <button
+                onClick={goToNextDay}
+                className="p-1.5 rounded hover:bg-terminal-elevated transition-colors text-text-muted hover:text-text-primary"
+                title="Next day"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          
+          {activeTab !== 'fixtures' && (
+            <span className="text-xs text-text-muted">
+              {formatDate(new Date(), { weekday: 'long', day: 'numeric', month: 'short' })}
+            </span>
+          )}
         </div>
 
         <div className="flex gap-1 px-2 pb-2">
@@ -371,11 +459,6 @@ function MatchCard({ fixture, isSelected, onSelect, showXg }: MatchCardProps) {
     signals.push({ type: 'hot', label: 'Big Match' })
   }
 
-  // Injury/absence indicator (simulated - would come from real news API)
-  const hasKeyAbsence = Math.random() > 0.85 // Simulated 15% chance
-  if (hasKeyAbsence && !fixture.isFinished) {
-    signals.push({ type: 'abs', label: 'Key OUT' })
-  }
 
   // Check if match is starting soon (within 2 hours)
   const kickoffTime = new Date(fixture.date).getTime()

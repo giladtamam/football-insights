@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 // ============================================
@@ -183,11 +183,33 @@ model User {
   id              Int              @id @default(autoincrement())
   email           String           @unique
   name            String?
+  avatar          String?
+  passwordHash    String?          // Null for Google-only users
+  googleId        String?          @unique
+  authProvider    String           @default("email") // "email" or "google"
+  emailVerified   Boolean          @default(false)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   notes           MatchNote[]
   favoriteTeams   FavoriteTeam[]
   favoriteLeagues FavoriteLeague[]
+  sessions        Session[]
+
+  @@index([googleId])
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  token        String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  userAgent    String?
+  ipAddress    String?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
 }
 
 model MatchNote {

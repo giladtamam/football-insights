@@ -12,6 +12,7 @@ import {
   ResponsibleGamblingModal, 
   SessionWarningToast 
 } from './components/ResponsibleGambling'
+import { AuthModal } from './components/auth'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 
 function App() {
@@ -41,6 +42,9 @@ function App() {
     <div className="min-h-screen flex flex-col overflow-hidden">
       {/* Responsible Gambling Disclaimer Modal */}
       <DisclaimerModal />
+
+      {/* Auth Modal */}
+      <AuthModal />
 
       {/* Command Palette */}
       <CommandPalette />
@@ -75,7 +79,7 @@ function App() {
         </AnimatePresence>
 
         {/* Center Panel - Match List */}
-        <section className="flex-1 min-w-0 h-full overflow-auto border-r border-terminal-border">
+        <section className="flex-1 min-w-0 h-[calc(100vh-3.5rem)] overflow-hidden border-r border-terminal-border">
           <MatchList />
         </section>
 

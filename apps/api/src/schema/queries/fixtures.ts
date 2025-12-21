@@ -9,6 +9,7 @@ builder.queryField("fixtures", (t) =>
       filter: t.arg({ type: FixtureFilterInput, required: false }),
       limit: t.arg.int({ required: false }),
       offset: t.arg.int({ required: false }),
+      orderDesc: t.arg.boolean({ required: false }), // true = newest first
     },
     resolve: async (query, _parent, args, ctx) => {
       const where: Record<string, unknown> = {};
@@ -42,6 +43,17 @@ builder.queryField("fixtures", (t) =>
           }
         }
 
+        // Timestamp-based filtering (more reliable for SQLite)
+        if (filter.timestampFrom || filter.timestampTo) {
+          where.timestamp = {};
+          if (filter.timestampFrom) {
+            (where.timestamp as Record<string, number>).gte = filter.timestampFrom;
+          }
+          if (filter.timestampTo) {
+            (where.timestamp as Record<string, number>).lte = filter.timestampTo;
+          }
+        }
+
         if (filter.status?.length) {
           where.statusShort = { in: filter.status };
         }
@@ -64,7 +76,7 @@ builder.queryField("fixtures", (t) =>
       return ctx.prisma.fixture.findMany({
         ...query,
         where,
-        orderBy: { date: "asc" },
+        orderBy: { timestamp: args.orderDesc ? "desc" : "asc" },
         take: args.limit ?? 50,
         skip: args.offset ?? 0,
       });

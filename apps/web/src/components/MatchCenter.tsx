@@ -73,12 +73,15 @@ export function MatchCenter() {
     }
     : data?.fixture
 
+  // Only show Model tab when real xG data is available
+  const hasXgData = fixture?.xgHome !== null && fixture?.xgHome !== undefined
+
   const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
     { id: 'overview', label: 'Overview', icon: Target },
     { id: 'lineups', label: 'Lineups', icon: Users },
     { id: 'stats', label: 'Stats', icon: BarChart3 },
     { id: 'odds', label: 'Odds', icon: TrendingUp },
-    { id: 'model', label: 'Model', icon: Calculator },
+    ...(hasXgData ? [{ id: 'model' as Tab, label: 'Model', icon: Calculator }] : []),
     { id: 'notes', label: 'Notes', icon: FileText },
     { id: 'h2h', label: 'H2H', icon: History },
   ]

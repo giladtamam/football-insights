@@ -15,12 +15,17 @@
     "@football-insights/shared": "*",
     "@pothos/core": "^4.3.0",
     "@pothos/plugin-prisma": "^4.2.0",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.4.7",
+    "google-auth-library": "^10.5.0",
     "graphql": "^16.9.0",
     "graphql-yoga": "^5.10.6",
+    "jsonwebtoken": "^9.0.3",
     "undici": "^7.16.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.10.2",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",

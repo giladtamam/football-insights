@@ -1,4 +1,6 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+import { useAuthStore } from "./auth-store";
 
 const httpLink = createHttpLink({
   // @ts-ignore
@@ -6,8 +8,19 @@ const httpLink = createHttpLink({
   credentials: "include",
 });
 
+// Add auth header to requests
+const authLink = setContext((_, { headers }) => {
+  const token = useAuthStore.getState().token;
+  return {
+    headers: {
+      ...headers,
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
+  };
+});
+
 export const apolloClient = new ApolloClient({
-  link: httpLink,
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

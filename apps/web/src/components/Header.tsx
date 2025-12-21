@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
   PanelLeftClose, 
@@ -14,8 +15,10 @@ import {
 import { useAppStore } from '../lib/store'
 import { cn } from '../lib/utils'
 import { SessionTimer } from './ResponsibleGambling'
+import { UserMenu, ProfileModal } from './auth'
 
 export function Header() {
+  const [showProfileModal, setShowProfileModal] = useState(false)
   const { 
     toggleLeftPanel, 
     toggleRightPanel, 
@@ -148,6 +151,17 @@ export function Header() {
         <button className="btn btn-ghost p-2">
           <Settings className="w-5 h-5" />
         </button>
+
+        {/* User Menu */}
+        <div className="border-l border-terminal-border pl-2 ml-1">
+          <UserMenu onOpenProfile={() => setShowProfileModal(true)} />
+        </div>
+
+        {/* Profile Modal */}
+        <ProfileModal 
+          isOpen={showProfileModal} 
+          onClose={() => setShowProfileModal(false)} 
+        />
 
         {/* Right panel toggle */}
         {selectedFixtureId && (
