@@ -39,17 +39,17 @@ const yoga = createYoga<{}, Context>({
   },
 });
 
-// Create server with health check support
+// Create server with health check
 const server = createServer((req, res) => {
-  // Health check endpoint for Railway
+  // Health check endpoints
   if (req.url === '/health' || req.url === '/') {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('OK');
     return;
   }
   
-  // Handle GraphQL requests
-  yoga(req, res);
+  // Let yoga handle GraphQL requests
+  yoga.handle(req, res);
 });
 
 const port = process.env.PORT || 4000;
