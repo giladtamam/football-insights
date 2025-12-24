@@ -39,11 +39,23 @@ const yoga = createYoga<{}, Context>({
   },
 });
 
-const server = createServer(yoga);
+// Create server with health check support
+const server = createServer((req, res) => {
+  // Health check endpoint for Railway
+  if (req.url === '/health' || req.url === '/') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('OK');
+    return;
+  }
+  
+  // Handle GraphQL requests
+  yoga(req, res);
+});
 
 const port = process.env.PORT || 4000;
 
 server.listen(port, () => {
   console.log(`🚀 GraphQL Server ready at http://localhost:${port}/graphql`);
+  console.log(`Health check available at http://localhost:${port}/health`);
 });
 
