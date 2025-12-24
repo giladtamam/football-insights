@@ -70,14 +70,7 @@ export function AuthModal() {
     onSuccess: async (tokenResponse) => {
       setError(null)
       try {
-        // Get user info from Google using the access token
-        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        })
-        const userInfo = await userInfoResponse.json()
-        
-        // For implicit flow, we'll create/login user with their Google info
-        // The backend googleAuth expects an ID token, so we'll adapt
+        // Send access token to backend for verification
         const { data } = await googleAuth({
           variables: { idToken: tokenResponse.access_token },
         })
