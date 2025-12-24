@@ -1,15 +1,25 @@
 import 'dotenv/config';
+import express from 'express';
 import { createYoga } from 'graphql-yoga';
-import { createServer } from 'node:http';
 import { schema } from './schema';
 import { prisma } from '@football-insights/database';
 import type { Context } from './schema/builder';
 import { verifyToken } from './services/auth';
 
+const app = express();
+
+// Health check endpoint
+app.get('/health', (_req, res) => {
+  res.status(200).send('OK');
+});
+
+app.get('/', (_req, res) => {
+  res.status(200).send('Football Insights API');
+});
+
 const yoga = createYoga<{}, Context>({
   schema,
   graphiql: true,
-  landingPage: true,
   cors: {
     origin: [
       'http://localhost:5173',
@@ -40,13 +50,12 @@ const yoga = createYoga<{}, Context>({
   },
 });
 
-// Create server - yoga is a valid Node.js request handler
-const server = createServer(yoga);
+// Mount GraphQL endpoint
+app.use('/graphql', yoga);
 
 const port = process.env.PORT || 4000;
-const host = '0.0.0.0';  // Bind to all interfaces for Railway
 
-server.listen(Number(port), host, () => {
-  console.log(`🚀 GraphQL Server ready at http://${host}:${port}/graphql`);
+app.listen(port, () => {
+  console.log(`🚀 GraphQL Server ready at http://0.0.0.0:${port}/graphql`);
+  console.log(`Health check at http://0.0.0.0:${port}/health`);
 });
-

@@ -17,6 +17,7 @@
     "@pothos/plugin-prisma": "^4.2.0",
     "bcryptjs": "^3.0.3",
     "dotenv": "^16.4.7",
+    "express": "^4.21.0",
     "google-auth-library": "^10.5.0",
     "graphql": "^16.9.0",
     "graphql-yoga": "^5.10.6",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.10.2",
     "tsup": "^8.3.5",
