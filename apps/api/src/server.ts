@@ -20,39 +20,43 @@ app.get('/', (_req, res) => {
 // Debug endpoint to check database connection
 app.get('/debug', async (_req, res) => {
   try {
-    // Log the query
-    console.log('DEBUG: Querying database...');
     console.log('DEBUG: DATABASE_URL:', process.env.DATABASE_URL?.substring(0, 60));
     
+    // Try raw queries (convert BigInt to string)
+    const countryRaw: any = await prisma.$queryRaw`SELECT COUNT(*)::integer as count FROM "Country"`;
+    const fixtureRaw: any = await prisma.$queryRaw`SELECT COUNT(*)::integer as count FROM "Fixture"`;
+    const teamRaw: any = await prisma.$queryRaw`SELECT COUNT(*)::integer as count FROM "Team"`;
+    
+    // Also try Prisma methods
     const countryCount = await prisma.country.count();
-    console.log('DEBUG: Country count:', countryCount);
-    
     const fixtureCount = await prisma.fixture.count();
-    console.log('DEBUG: Fixture count:', fixtureCount);
     
-    const teamCount = await prisma.team.count();
-    console.log('DEBUG: Team count:', teamCount);
-    
-    // Try raw query
-    const rawCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM "Country"`;
-    console.log('DEBUG: Raw query result:', rawCount);
+    // Get sample data
+    const sampleCountries = await prisma.country.findMany({ take: 3 });
+    const sampleFixtures = await prisma.fixture.findMany({ take: 3, include: { homeTeam: true, awayTeam: true } });
     
     res.json({
       status: 'ok',
       database_url: process.env.DATABASE_URL?.substring(0, 50) + '...',
-      counts: {
+      raw_counts: {
+        countries: countryRaw[0]?.count,
+        fixtures: fixtureRaw[0]?.count,
+        teams: teamRaw[0]?.count,
+      },
+      prisma_counts: {
         countries: countryCount,
         fixtures: fixtureCount,
-        teams: teamCount,
       },
-      rawCount,
+      samples: {
+        countries: sampleCountries.map(c => c.name),
+        fixtures: sampleFixtures.map(f => `${f.homeTeam?.name} vs ${f.awayTeam?.name}`),
+      }
     });
   } catch (error: any) {
     console.error('DEBUG ERROR:', error);
     res.status(500).json({
       status: 'error',
       message: error.message,
-      stack: error.stack,
       database_url: process.env.DATABASE_URL?.substring(0, 50) + '...',
     });
   }
