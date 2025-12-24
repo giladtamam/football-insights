@@ -19,6 +19,10 @@ COPY . .
 # Generate Prisma client
 RUN npm run db:generate --workspace=packages/database
 
+# Build packages first (database and shared)
+RUN npm run build --workspace=packages/database
+RUN npm run build --workspace=packages/shared
+
 # Build API
 RUN npm run build --workspace=apps/api
 
@@ -27,13 +31,26 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Copy built files and dependencies
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/api/dist ./apps/api/dist
-COPY --from=builder /app/apps/api/package.json ./apps/api/
-COPY --from=builder /app/packages/database ./packages/database
-COPY --from=builder /app/packages/shared ./packages/shared
+# Copy package files first
 COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/apps/api/package.json ./apps/api/
+
+# Copy the built packages with their dist folders
+COPY --from=builder /app/packages/database/package.json ./packages/database/
+COPY --from=builder /app/packages/database/dist ./packages/database/dist
+COPY --from=builder /app/packages/shared/package.json ./packages/shared/
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+
+# Copy Prisma schema and generated client
+COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
+COPY --from=builder /app/packages/database/node_modules/.prisma ./packages/database/node_modules/.prisma
+COPY --from=builder /app/packages/database/node_modules/@prisma ./packages/database/node_modules/@prisma
+
+# Copy API dist
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+
+# Copy node_modules (includes workspace symlinks)
+COPY --from=builder /app/node_modules ./node_modules
 
 # Set environment
 ENV NODE_ENV=production
