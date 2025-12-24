@@ -20,9 +20,22 @@ app.get('/', (_req, res) => {
 // Debug endpoint to check database connection
 app.get('/debug', async (_req, res) => {
   try {
+    // Log the query
+    console.log('DEBUG: Querying database...');
+    console.log('DEBUG: DATABASE_URL:', process.env.DATABASE_URL?.substring(0, 60));
+    
     const countryCount = await prisma.country.count();
+    console.log('DEBUG: Country count:', countryCount);
+    
     const fixtureCount = await prisma.fixture.count();
+    console.log('DEBUG: Fixture count:', fixtureCount);
+    
     const teamCount = await prisma.team.count();
+    console.log('DEBUG: Team count:', teamCount);
+    
+    // Try raw query
+    const rawCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM "Country"`;
+    console.log('DEBUG: Raw query result:', rawCount);
     
     res.json({
       status: 'ok',
@@ -31,12 +44,15 @@ app.get('/debug', async (_req, res) => {
         countries: countryCount,
         fixtures: fixtureCount,
         teams: teamCount,
-      }
+      },
+      rawCount,
     });
   } catch (error: any) {
+    console.error('DEBUG ERROR:', error);
     res.status(500).json({
       status: 'error',
       message: error.message,
+      stack: error.stack,
       database_url: process.env.DATABASE_URL?.substring(0, 50) + '...',
     });
   }
