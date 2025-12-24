@@ -44,8 +44,9 @@ const yoga = createYoga<{}, Context>({
 const server = createServer(yoga);
 
 const port = process.env.PORT || 4000;
+const host = '0.0.0.0';  // Bind to all interfaces for Railway
 
-server.listen(port, () => {
-  console.log(`🚀 GraphQL Server ready at http://localhost:${port}/graphql`);
+server.listen(Number(port), host, () => {
+  console.log(`🚀 GraphQL Server ready at http://${host}:${port}/graphql`);
 });
 
