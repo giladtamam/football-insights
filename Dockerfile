@@ -41,10 +41,8 @@ COPY --from=builder /app/packages/database/dist ./packages/database/dist
 COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
-# Copy Prisma schema and generated client
+# Copy Prisma schema
 COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
-COPY --from=builder /app/packages/database/node_modules/.prisma ./packages/database/node_modules/.prisma
-COPY --from=builder /app/packages/database/node_modules/@prisma ./packages/database/node_modules/@prisma
 
 # Copy API dist
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
