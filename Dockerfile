@@ -53,11 +53,11 @@ COPY --from=builder /app/node_modules ./node_modules
 
 # Set environment
 ENV NODE_ENV=production
-ENV PORT=4000
 
-EXPOSE 4000
+# Railway sets PORT dynamically, don't hardcode
+EXPOSE 8080
 
-# Run migrations and start the API
-CMD ["sh", "-c", "cd packages/database && npx prisma db push --skip-generate && cd /app && node apps/api/dist/server.js"]
+# Start the API directly (run migrations separately if needed)
+CMD ["node", "apps/api/dist/server.js"]
 
 
