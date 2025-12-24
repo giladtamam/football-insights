@@ -56,7 +56,7 @@ ENV PORT=4000
 
 EXPOSE 4000
 
-# Start the API
-CMD ["node", "apps/api/dist/server.js"]
+# Run migrations and start the API
+CMD ["sh", "-c", "cd packages/database && npx prisma db push --skip-generate && cd /app && node apps/api/dist/server.js"]
 
 
