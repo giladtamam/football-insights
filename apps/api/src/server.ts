@@ -55,7 +55,20 @@ app.use('/graphql', yoga);
 
 const port = process.env.PORT || 4000;
 
-app.listen(port, () => {
+// Handle uncaught errors to prevent crashes
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
+
+const server = app.listen(port, () => {
   console.log(`🚀 GraphQL Server ready at http://0.0.0.0:${port}/graphql`);
   console.log(`Health check at http://0.0.0.0:${port}/health`);
 });
+
+// Keep the server alive
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
