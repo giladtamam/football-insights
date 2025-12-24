@@ -17,6 +17,31 @@ app.get('/', (_req, res) => {
   res.status(200).send('Football Insights API');
 });
 
+// Debug endpoint to check database connection
+app.get('/debug', async (_req, res) => {
+  try {
+    const countryCount = await prisma.country.count();
+    const fixtureCount = await prisma.fixture.count();
+    const teamCount = await prisma.team.count();
+    
+    res.json({
+      status: 'ok',
+      database_url: process.env.DATABASE_URL?.substring(0, 50) + '...',
+      counts: {
+        countries: countryCount,
+        fixtures: fixtureCount,
+        teams: teamCount,
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message,
+      database_url: process.env.DATABASE_URL?.substring(0, 50) + '...',
+    });
+  }
+});
+
 const yoga = createYoga<{}, Context>({
   schema,
   graphiql: true,
