@@ -16,7 +16,8 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client (use dummy URL for generation - it doesn't connect)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 RUN npm run db:generate --workspace=packages/database
 
 # Build packages first (database and shared)
