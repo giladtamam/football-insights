@@ -9,6 +9,7 @@ import { verifyToken } from './services/auth';
 const yoga = createYoga<{}, Context>({
   schema,
   graphiql: true,
+  landingPage: true,
   cors: {
     origin: [
       'http://localhost:5173',
@@ -39,23 +40,12 @@ const yoga = createYoga<{}, Context>({
   },
 });
 
-// Create server with health check
-const server = createServer((req, res) => {
-  // Health check endpoints
-  if (req.url === '/health' || req.url === '/') {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('OK');
-    return;
-  }
-  
-  // Let yoga handle GraphQL requests
-  yoga.handle(req, res);
-});
+// Create server - yoga is a valid Node.js request handler
+const server = createServer(yoga);
 
 const port = process.env.PORT || 4000;
 
 server.listen(port, () => {
   console.log(`🚀 GraphQL Server ready at http://localhost:${port}/graphql`);
-  console.log(`Health check available at http://localhost:${port}/health`);
 });
 
