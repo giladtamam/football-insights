@@ -209,6 +209,204 @@ async function main() {
   }
   console.log(`✅ Created ${sampleFixtures.length} sample fixtures`);
 
+  // Create Christmas Day 2025 fixtures (December 25, 2025)
+  // Boxing Day style Premier League fixtures
+  const christmasDay = new Date('2025-12-25T12:30:00Z');
+  
+  const christmasFixtures = [
+    {
+      id: 2000001,
+      homeTeamId: 42, // Arsenal
+      awayTeamId: 57, // Ipswich Town
+      goalsHome: null,
+      goalsAway: null,
+      xgHome: null,
+      xgAway: null,
+      status: 'Not Started',
+      statusShort: 'NS',
+      kickoff: new Date('2025-12-25T12:30:00Z'),
+      round: 'Regular Season - 18',
+      venue: 'Emirates Stadium',
+      referee: 'Michael Oliver',
+    },
+    {
+      id: 2000002,
+      homeTeamId: 35, // Bournemouth
+      awayTeamId: 52, // Crystal Palace
+      goalsHome: null,
+      goalsAway: null,
+      xgHome: null,
+      xgAway: null,
+      status: 'Not Started',
+      statusShort: 'NS',
+      kickoff: new Date('2025-12-25T15:00:00Z'),
+      round: 'Regular Season - 18',
+      venue: 'Vitality Stadium',
+      referee: 'Anthony Taylor',
+    },
+    {
+      id: 2000003,
+      homeTeamId: 49, // Chelsea
+      awayTeamId: 36, // Fulham
+      goalsHome: null,
+      goalsAway: null,
+      xgHome: null,
+      xgAway: null,
+      status: 'Not Started',
+      statusShort: 'NS',
+      kickoff: new Date('2025-12-25T15:00:00Z'),
+      round: 'Regular Season - 18',
+      venue: 'Stamford Bridge',
+      referee: 'Simon Hooper',
+    },
+    {
+      id: 2000004,
+      homeTeamId: 34, // Newcastle
+      awayTeamId: 66, // Aston Villa
+      goalsHome: null,
+      goalsAway: null,
+      xgHome: null,
+      xgAway: null,
+      status: 'Not Started',
+      statusShort: 'NS',
+      kickoff: new Date('2025-12-25T15:00:00Z'),
+      round: 'Regular Season - 18',
+      venue: "St. James' Park",
+      referee: 'Stuart Attwell',
+    },
+    {
+      id: 2000005,
+      homeTeamId: 63, // Nottingham Forest
+      awayTeamId: 47, // Tottenham
+      goalsHome: null,
+      goalsAway: null,
+      xgHome: null,
+      xgAway: null,
+      status: 'Not Started',
+      statusShort: 'NS',
+      kickoff: new Date('2025-12-25T15:00:00Z'),
+      round: 'Regular Season - 18',
+      venue: 'City Ground',
+      referee: 'Chris Kavanagh',
+    },
+    {
+      id: 2000006,
+      homeTeamId: 41, // Southampton
+      awayTeamId: 48, // West Ham
+      goalsHome: null,
+      goalsAway: null,
+      xgHome: null,
+      xgAway: null,
+      status: 'Not Started',
+      statusShort: 'NS',
+      kickoff: new Date('2025-12-25T15:00:00Z'),
+      round: 'Regular Season - 18',
+      venue: "St. Mary's Stadium",
+      referee: 'Peter Bankes',
+    },
+    {
+      id: 2000007,
+      homeTeamId: 39, // Wolves
+      awayTeamId: 33, // Man United
+      goalsHome: null,
+      goalsAway: null,
+      xgHome: null,
+      xgAway: null,
+      status: 'Not Started',
+      statusShort: 'NS',
+      kickoff: new Date('2025-12-25T17:30:00Z'),
+      round: 'Regular Season - 18',
+      venue: 'Molineux Stadium',
+      referee: 'David Coote',
+    },
+    {
+      id: 2000008,
+      homeTeamId: 50, // Man City
+      awayTeamId: 45, // Everton
+      goalsHome: null,
+      goalsAway: null,
+      xgHome: null,
+      xgAway: null,
+      status: 'Not Started',
+      statusShort: 'NS',
+      kickoff: new Date('2025-12-25T20:00:00Z'),
+      round: 'Regular Season - 18',
+      venue: 'Etihad Stadium',
+      referee: 'Michael Oliver',
+    },
+    {
+      id: 2000009,
+      homeTeamId: 40, // Liverpool
+      awayTeamId: 46, // Leicester
+      goalsHome: null,
+      goalsAway: null,
+      xgHome: null,
+      xgAway: null,
+      status: 'Not Started',
+      statusShort: 'NS',
+      kickoff: new Date('2025-12-25T20:00:00Z'),
+      round: 'Regular Season - 18',
+      venue: 'Anfield',
+      referee: 'Paul Tierney',
+    },
+    {
+      id: 2000010,
+      homeTeamId: 55, // Brentford
+      awayTeamId: 51, // Brighton
+      goalsHome: null,
+      goalsAway: null,
+      xgHome: null,
+      xgAway: null,
+      status: 'Not Started',
+      statusShort: 'NS',
+      kickoff: new Date('2025-12-25T17:30:00Z'),
+      round: 'Regular Season - 18',
+      venue: 'Gtech Community Stadium',
+      referee: 'Robert Jones',
+    },
+  ];
+
+  for (const fixture of christmasFixtures) {
+    await prisma.fixture.upsert({
+      where: { id: fixture.id },
+      update: {
+        date: fixture.kickoff,
+        timestamp: Math.floor(fixture.kickoff.getTime() / 1000),
+        timezone: 'UTC',
+        status: fixture.status,
+        statusShort: fixture.statusShort,
+        round: fixture.round,
+        venue: fixture.venue,
+        referee: fixture.referee,
+        homeTeamId: fixture.homeTeamId,
+        awayTeamId: fixture.awayTeamId,
+        goalsHome: fixture.goalsHome,
+        goalsAway: fixture.goalsAway,
+        xgHome: fixture.xgHome,
+        xgAway: fixture.xgAway,
+      },
+      create: {
+        id: fixture.id,
+        date: fixture.kickoff,
+        timestamp: Math.floor(fixture.kickoff.getTime() / 1000),
+        timezone: 'UTC',
+        status: fixture.status,
+        statusShort: fixture.statusShort,
+        round: fixture.round,
+        venue: fixture.venue,
+        referee: fixture.referee,
+        seasonId: plSeasonId,
+        homeTeamId: fixture.homeTeamId,
+        awayTeamId: fixture.awayTeamId,
+        goalsHome: fixture.goalsHome,
+        goalsAway: fixture.goalsAway,
+        xgHome: fixture.xgHome,
+        xgAway: fixture.xgAway,
+      },
+    });
+  }
+  console.log(`✅ Created ${christmasFixtures.length} Christmas Day 2025 fixtures`);
+
   // Create sample standings
   const standingsData = [
     { rank: 1, teamId: 40, points: 39, goalsDiff: 25, played: 16, win: 12, draw: 3, lose: 1, goalsFor: 36, goalsAgainst: 11, form: 'WWWWD' },

@@ -81,7 +81,17 @@ export function MatchList() {
   } = useAppStore()
 
   // Selected date for fixtures tab
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  // Default to Dec 26, 2024 (Boxing Day) where we have data
+  // TODO: Change back to new Date() when we have current season data
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    const today = new Date()
+    // If we're past May 2025, default to Dec 26, 2024 (Boxing Day with fixtures)
+    const dataEndDate = new Date('2025-05-25')
+    if (today > dataEndDate) {
+      return new Date('2024-12-26')
+    }
+    return today
+  })
 
   const { start: dateFrom, end: dateTo } = getDayBoundsUTC(selectedDate)
 
