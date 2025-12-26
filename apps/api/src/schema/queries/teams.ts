@@ -8,6 +8,7 @@ builder.queryField('teams', (t) =>
       countryId: t.arg.int({ required: false }),
       search: t.arg.string({ required: false }),
       favoriteOnly: t.arg.boolean({ required: false }),
+      limit: t.arg.int({ required: false }),
     },
     resolve: async (query, _parent, args, ctx) => {
       const where: Record<string, unknown> = {};
@@ -36,6 +37,7 @@ builder.queryField('teams', (t) =>
         ...query,
         where,
         orderBy: { name: 'asc' },
+        take: args.limit ?? undefined,
       });
     },
   })

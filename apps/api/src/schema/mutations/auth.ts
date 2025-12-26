@@ -8,16 +8,62 @@ import {
   validateEmail,
 } from '../../services/auth';
 
+// Auth User type (subset of User for auth responses)
+interface AuthUserType {
+  id: number;
+  email: string;
+  name: string | null;
+  avatar: string | null;
+  authProvider: string;
+  birthDate: Date | null;
+  location: string | null;
+  bio: string | null;
+  timezone: string | null;
+  favoriteTeamId: number | null;
+  favoriteTeam: { id: number; name: string; logo: string | null } | null;
+}
+
+const AuthUser = builder.objectRef<AuthUserType>('AuthUser');
+
+builder.objectType(AuthUser, {
+  fields: (t) => ({
+    id: t.exposeInt('id'),
+    email: t.exposeString('email'),
+    name: t.exposeString('name', { nullable: true }),
+    avatar: t.exposeString('avatar', { nullable: true }),
+    authProvider: t.exposeString('authProvider'),
+    birthDate: t.expose('birthDate', { type: 'DateTime', nullable: true }),
+    location: t.exposeString('location', { nullable: true }),
+    bio: t.exposeString('bio', { nullable: true }),
+    timezone: t.exposeString('timezone', { nullable: true }),
+    favoriteTeamId: t.exposeInt('favoriteTeamId', { nullable: true }),
+    favoriteTeam: t.field({
+      type: FavoriteTeamRef,
+      nullable: true,
+      resolve: (parent) => parent.favoriteTeam,
+    }),
+  }),
+});
+
+// Favorite Team reference type
+const FavoriteTeamRef = builder.objectRef<{
+  id: number;
+  name: string;
+  logo: string | null;
+}>('FavoriteTeamRef');
+
+builder.objectType(FavoriteTeamRef, {
+  fields: (t) => ({
+    id: t.exposeInt('id'),
+    name: t.exposeString('name'),
+    logo: t.exposeString('logo', { nullable: true }),
+  }),
+});
+
 // Auth Response type
 const AuthResponse = builder.objectRef<{
   token: string;
-  user: {
-    id: number;
-    email: string;
-    name: string | null;
-    avatar: string | null;
-    authProvider: string;
-  };
+  user: AuthUserType;
 }>('AuthResponse');
 
 builder.objectType(AuthResponse, {
@@ -27,25 +73,6 @@ builder.objectType(AuthResponse, {
       type: AuthUser,
       resolve: (parent) => parent.user,
     }),
-  }),
-});
-
-// Auth User type (subset of User for auth responses)
-const AuthUser = builder.objectRef<{
-  id: number;
-  email: string;
-  name: string | null;
-  avatar: string | null;
-  authProvider: string;
-}>('AuthUser');
-
-builder.objectType(AuthUser, {
-  fields: (t) => ({
-    id: t.exposeInt('id'),
-    email: t.exposeString('email'),
-    name: t.exposeString('name', { nullable: true }),
-    avatar: t.exposeString('avatar', { nullable: true }),
-    authProvider: t.exposeString('authProvider'),
   }),
 });
 
@@ -103,6 +130,12 @@ builder.mutationField('signUp', (t) =>
           name: user.name,
           avatar: user.avatar,
           authProvider: user.authProvider,
+          birthDate: user.birthDate,
+          location: user.location,
+          bio: user.bio,
+          timezone: user.timezone,
+          favoriteTeamId: user.favoriteTeamId,
+          favoriteTeam: null,
         },
       };
     },
@@ -138,6 +171,16 @@ builder.mutationField('login', (t) =>
         throw new Error('Invalid email or password');
       }
 
+      // Get favorite team if exists
+      let favoriteTeam = null;
+      if (user.favoriteTeamId) {
+        const team = await ctx.prisma.team.findUnique({
+          where: { id: user.favoriteTeamId },
+          select: { id: true, name: true, logo: true },
+        });
+        favoriteTeam = team;
+      }
+
       // Generate token
       const token = generateToken({ userId: user.id, email: user.email });
 
@@ -149,6 +192,12 @@ builder.mutationField('login', (t) =>
           name: user.name,
           avatar: user.avatar,
           authProvider: user.authProvider,
+          birthDate: user.birthDate,
+          location: user.location,
+          bio: user.bio,
+          timezone: user.timezone,
+          favoriteTeamId: user.favoriteTeamId,
+          favoriteTeam,
         },
       };
     },
@@ -206,6 +255,16 @@ builder.mutationField('googleAuth', (t) =>
         });
       }
 
+      // Get favorite team if exists
+      let favoriteTeam = null;
+      if (user.favoriteTeamId) {
+        const team = await ctx.prisma.team.findUnique({
+          where: { id: user.favoriteTeamId },
+          select: { id: true, name: true, logo: true },
+        });
+        favoriteTeam = team;
+      }
+
       // Generate token
       const token = generateToken({ userId: user.id, email: user.email });
 
@@ -217,6 +276,12 @@ builder.mutationField('googleAuth', (t) =>
           name: user.name,
           avatar: user.avatar,
           authProvider: user.authProvider,
+          birthDate: user.birthDate,
+          location: user.location,
+          bio: user.bio,
+          timezone: user.timezone,
+          favoriteTeamId: user.favoriteTeamId,
+          favoriteTeam,
         },
       };
     },
@@ -235,6 +300,11 @@ builder.queryField('me', (t) =>
 
       const user = await ctx.prisma.user.findUnique({
         where: { id: ctx.userId },
+        include: {
+          favoriteTeam: {
+            select: { id: true, name: true, logo: true },
+          },
+        },
       });
 
       if (!user) {
@@ -247,6 +317,12 @@ builder.queryField('me', (t) =>
         name: user.name,
         avatar: user.avatar,
         authProvider: user.authProvider,
+        birthDate: user.birthDate,
+        location: user.location,
+        bio: user.bio,
+        timezone: user.timezone,
+        favoriteTeamId: user.favoriteTeamId,
+        favoriteTeam: user.favoriteTeam,
       };
     },
   })
@@ -259,19 +335,53 @@ builder.mutationField('updateProfile', (t) =>
     args: {
       name: t.arg.string({ required: false }),
       avatar: t.arg.string({ required: false }),
+      birthDate: t.arg({ type: 'DateTime', required: false }),
+      location: t.arg.string({ required: false }),
+      bio: t.arg.string({ required: false }),
+      timezone: t.arg.string({ required: false }),
+      favoriteTeamId: t.arg.int({ required: false }),
     },
     resolve: async (_parent, args, ctx) => {
       if (!ctx.userId) {
         throw new Error('Authentication required');
       }
 
-      const updateData: { name?: string; avatar?: string } = {};
+      const updateData: {
+        name?: string | null;
+        avatar?: string | null;
+        birthDate?: Date | null;
+        location?: string | null;
+        bio?: string | null;
+        timezone?: string | null;
+        favoriteTeamId?: number | null;
+      } = {};
+
       if (args.name !== undefined) updateData.name = args.name;
       if (args.avatar !== undefined) updateData.avatar = args.avatar;
+      if (args.birthDate !== undefined) updateData.birthDate = args.birthDate;
+      if (args.location !== undefined) updateData.location = args.location;
+      if (args.bio !== undefined) updateData.bio = args.bio;
+      if (args.timezone !== undefined) updateData.timezone = args.timezone;
+      if (args.favoriteTeamId !== undefined) updateData.favoriteTeamId = args.favoriteTeamId;
+
+      // Validate favorite team exists if provided
+      if (args.favoriteTeamId) {
+        const team = await ctx.prisma.team.findUnique({
+          where: { id: args.favoriteTeamId },
+        });
+        if (!team) {
+          throw new Error('Team not found');
+        }
+      }
 
       const user = await ctx.prisma.user.update({
         where: { id: ctx.userId },
         data: updateData,
+        include: {
+          favoriteTeam: {
+            select: { id: true, name: true, logo: true },
+          },
+        },
       });
 
       return {
@@ -280,6 +390,12 @@ builder.mutationField('updateProfile', (t) =>
         name: user.name,
         avatar: user.avatar,
         authProvider: user.authProvider,
+        birthDate: user.birthDate,
+        location: user.location,
+        bio: user.bio,
+        timezone: user.timezone,
+        favoriteTeamId: user.favoriteTeamId,
+        favoriteTeam: user.favoriteTeam,
       };
     },
   })

@@ -1,15 +1,29 @@
 import { gql } from '@apollo/client'
 
+const USER_FIELDS = `
+  id
+  email
+  name
+  avatar
+  authProvider
+  birthDate
+  location
+  bio
+  timezone
+  favoriteTeamId
+  favoriteTeam {
+    id
+    name
+    logo
+  }
+`
+
 export const SIGN_UP = gql`
   mutation SignUp($email: String!, $password: String!, $name: String) {
     signUp(email: $email, password: $password, name: $name) {
       token
       user {
-        id
-        email
-        name
-        avatar
-        authProvider
+        ${USER_FIELDS}
       }
     }
   }
@@ -20,11 +34,7 @@ export const LOGIN = gql`
     login(email: $email, password: $password) {
       token
       user {
-        id
-        email
-        name
-        avatar
-        authProvider
+        ${USER_FIELDS}
       }
     }
   }
@@ -35,11 +45,7 @@ export const GOOGLE_AUTH = gql`
     googleAuth(idToken: $idToken) {
       token
       user {
-        id
-        email
-        name
-        avatar
-        authProvider
+        ${USER_FIELDS}
       }
     }
   }
@@ -48,23 +54,31 @@ export const GOOGLE_AUTH = gql`
 export const GET_ME = gql`
   query GetMe {
     me {
-      id
-      email
-      name
-      avatar
-      authProvider
+      ${USER_FIELDS}
     }
   }
 `
 
 export const UPDATE_PROFILE = gql`
-  mutation UpdateProfile($name: String, $avatar: String) {
-    updateProfile(name: $name, avatar: $avatar) {
-      id
-      email
-      name
-      avatar
-      authProvider
+  mutation UpdateProfile(
+    $name: String
+    $avatar: String
+    $birthDate: DateTime
+    $location: String
+    $bio: String
+    $timezone: String
+    $favoriteTeamId: Int
+  ) {
+    updateProfile(
+      name: $name
+      avatar: $avatar
+      birthDate: $birthDate
+      location: $location
+      bio: $bio
+      timezone: $timezone
+      favoriteTeamId: $favoriteTeamId
+    ) {
+      ${USER_FIELDS}
     }
   }
 `
@@ -72,6 +86,21 @@ export const UPDATE_PROFILE = gql`
 export const CHANGE_PASSWORD = gql`
   mutation ChangePassword($currentPassword: String!, $newPassword: String!) {
     changePassword(currentPassword: $currentPassword, newPassword: $newPassword)
+  }
+`
+
+// Query to search for teams (for favorite team selector)
+export const SEARCH_TEAMS = gql`
+  query SearchTeams($search: String!, $limit: Int) {
+    teams(search: $search, limit: $limit) {
+      id
+      name
+      logo
+      country {
+        name
+        flag
+      }
+    }
   }
 `
 

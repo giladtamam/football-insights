@@ -64,6 +64,7 @@ model Team {
   awayFixtures  Fixture[]      @relation("AwayTeam")
   standings     Standing[]
   favoriteBy    FavoriteTeam[]
+  primaryFans   User[]         @relation("PrimaryFavoriteTeam")
 
   @@index([countryId])
 }
@@ -188,6 +189,15 @@ model User {
   googleId        String?          @unique
   authProvider    String           @default("email") // "email" or "google"
   emailVerified   Boolean          @default(false)
+  
+  // Extended profile fields
+  birthDate       DateTime?
+  location        String?          // City/Country
+  bio             String?          // Short bio/description
+  timezone        String?          // User's timezone preference
+  favoriteTeamId  Int?             // Primary favorite team
+  favoriteTeam    Team?            @relation("PrimaryFavoriteTeam", fields: [favoriteTeamId], references: [id])
+  
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   notes           MatchNote[]
@@ -196,6 +206,7 @@ model User {
   sessions        Session[]
 
   @@index([googleId])
+  @@index([favoriteTeamId])
 }
 
 model Session {

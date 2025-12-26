@@ -1,12 +1,24 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+export interface FavoriteTeam {
+  id: number
+  name: string
+  logo: string | null
+}
+
 export interface AuthUser {
   id: number
   email: string
   name: string | null
   avatar: string | null
   authProvider: string
+  birthDate: string | null
+  location: string | null
+  bio: string | null
+  timezone: string | null
+  favoriteTeamId: number | null
+  favoriteTeam: FavoriteTeam | null
 }
 
 interface AuthState {
