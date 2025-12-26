@@ -206,6 +206,7 @@ export const TOP_LEAGUES = [
   { id: 135, name: "Serie A", country: "Italy", flag: "🇮🇹" },
   { id: 78, name: "Bundesliga", country: "Germany", flag: "🇩🇪" },
   { id: 61, name: "Ligue 1", country: "France", flag: "🇫🇷" },
+  { id: 383, name: "Ligat Ha'al", country: "Israel", flag: "🇮🇱" },
   { id: 40, name: "Championship", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
   { id: 88, name: "Eredivisie", country: "Netherlands", flag: "🇳🇱" },
   { id: 94, name: "Primeira Liga", country: "Portugal", flag: "🇵🇹" },
