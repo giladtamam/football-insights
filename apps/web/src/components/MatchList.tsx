@@ -279,7 +279,7 @@ export function MatchList() {
                     : "hover:bg-terminal-elevated text-text-secondary hover:text-text-primary"
                 )}
               >
-                {formatDate(selectedDate, { weekday: 'short', day: 'numeric', month: 'short' })}
+                {formatDate(selectedDate, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
               </button>
               
               <button
