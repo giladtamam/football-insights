@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useMutation } from '@apollo/client'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -94,7 +95,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         .slice(0, 2)
     : user.email[0].toUpperCase()
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -368,7 +369,8 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         </motion.div>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }
 
