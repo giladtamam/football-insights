@@ -100,17 +100,18 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm overflow-y-auto py-8"
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm overflow-y-auto"
         onClick={onClose}
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-lg mx-4 my-auto bg-terminal-bg border border-terminal-border rounded-xl shadow-2xl overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="min-h-full flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="relative w-full max-w-lg bg-terminal-bg border border-terminal-border rounded-xl shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
           {/* Header */}
           <div className="relative px-6 pt-6 pb-4 border-b border-terminal-border">
             <button
@@ -365,6 +366,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             )}
           </div>
         </motion.div>
+        </div>
       </motion.div>
     </AnimatePresence>
   )
