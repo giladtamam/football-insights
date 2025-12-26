@@ -100,7 +100,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm overflow-y-auto py-8"
         onClick={onClose}
       >
         <motion.div
@@ -108,7 +108,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-lg mx-4 bg-terminal-bg border border-terminal-border rounded-xl shadow-2xl overflow-hidden"
+          className="relative w-full max-w-lg mx-4 my-auto bg-terminal-bg border border-terminal-border rounded-xl shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
