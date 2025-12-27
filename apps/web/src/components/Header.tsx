@@ -16,9 +16,12 @@ import { useAppStore } from '../lib/store'
 import { cn } from '../lib/utils'
 import { SessionTimer } from './ResponsibleGambling'
 import { UserMenu, ProfileModal } from './auth'
+import { SyncButton } from './admin/SyncButton'
+import { useAuthStore } from '../lib/auth-store'
 
 export function Header() {
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const { user } = useAuthStore()
   const { 
     toggleLeftPanel, 
     toggleRightPanel, 
@@ -146,6 +149,9 @@ export function Header() {
         >
           <Shield className="w-5 h-5" />
         </button>
+
+        {/* Data Sync (for logged in users) */}
+        {user && <SyncButton />}
 
         {/* Settings */}
         <button className="btn btn-ghost p-2">

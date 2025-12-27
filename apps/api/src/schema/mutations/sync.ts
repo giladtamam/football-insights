@@ -10,6 +10,176 @@ const SyncResult = builder.objectType('SyncResult', {
   }),
 });
 
+// Top leagues configuration
+const TOP_LEAGUES = [
+  { id: 39, name: 'Premier League' },
+  { id: 140, name: 'La Liga' },
+  { id: 135, name: 'Serie A' },
+  { id: 78, name: 'Bundesliga' },
+  { id: 61, name: 'Ligue 1' },
+  { id: 2, name: 'Champions League' },
+  { id: 3, name: 'Europa League' },
+];
+
+function getCurrentSeason(): number {
+  const now = new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+  return month < 7 ? year - 1 : year;
+}
+
+// Sync all top leagues - protected with secret or admin role
+builder.mutationField('syncAll', (t) =>
+  t.field({
+    type: SyncResult,
+    args: {
+      secret: t.arg.string({ required: false }),
+      leagueIds: t.arg.intList({ required: false }),
+    },
+    resolve: async (_parent, args, ctx) => {
+      // Verify access: either valid secret or authenticated admin
+      const syncSecret = process.env.SYNC_SECRET;
+      const isValidSecret = syncSecret && args.secret === syncSecret;
+      const isAdmin = ctx.userId !== undefined; // For now, any authenticated user can sync
+      
+      if (!isValidSecret && !isAdmin) {
+        return {
+          success: false,
+          message: 'Unauthorized: Invalid secret or not authenticated',
+          count: null,
+        };
+      }
+
+      const season = getCurrentSeason();
+      const leaguesToSync = args.leagueIds?.length 
+        ? TOP_LEAGUES.filter(l => args.leagueIds!.includes(l.id))
+        : TOP_LEAGUES;
+
+      console.log(`🚀 Starting syncAll for season ${season}...`);
+      console.log(`   Leagues: ${leaguesToSync.map(l => l.name).join(', ')}`);
+
+      let totalFixtures = 0;
+      const results: string[] = [];
+
+      try {
+        for (const league of leaguesToSync) {
+          console.log(`\n📦 Syncing ${league.name}...`);
+          
+          // Sync fixtures
+          const fixtures = await footballApiClient.getFixtures(league.id, season);
+          
+          const seasonRecord = await ctx.prisma.season.findFirst({
+            where: { leagueId: league.id, year: season },
+          });
+
+          if (!seasonRecord) {
+            results.push(`${league.name}: Season not found`);
+            continue;
+          }
+
+          let syncedCount = 0;
+          for (const fixture of fixtures) {
+            try {
+              await ctx.prisma.fixture.upsert({
+                where: { id: fixture.id },
+                create: {
+                  id: fixture.id,
+                  date: new Date(fixture.date),
+                  timestamp: fixture.timestamp,
+                  timezone: fixture.timezone,
+                  status: fixture.status.long,
+                  statusShort: fixture.status.short,
+                  elapsed: fixture.status.elapsed,
+                  round: fixture.round,
+                  venue: fixture.venue?.name,
+                  referee: fixture.referee,
+                  seasonId: seasonRecord.id,
+                  homeTeamId: fixture.homeTeam.id,
+                  awayTeamId: fixture.awayTeam.id,
+                  goalsHome: fixture.goals.home,
+                  goalsAway: fixture.goals.away,
+                  xgHome: fixture.xg?.home,
+                  xgAway: fixture.xg?.away,
+                },
+                update: {
+                  status: fixture.status.long,
+                  statusShort: fixture.status.short,
+                  elapsed: fixture.status.elapsed,
+                  goalsHome: fixture.goals.home,
+                  goalsAway: fixture.goals.away,
+                  xgHome: fixture.xg?.home,
+                  xgAway: fixture.xg?.away,
+                },
+              });
+              syncedCount++;
+            } catch (e) {
+              // Skip individual fixture errors
+            }
+          }
+
+          totalFixtures += syncedCount;
+          results.push(`${league.name}: ${syncedCount} fixtures`);
+          
+          // Small delay between leagues
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+
+        const message = `Synced ${leaguesToSync.length} leagues, ${totalFixtures} fixtures. Details: ${results.join('; ')}`;
+        console.log(`✅ ${message}`);
+
+        return {
+          success: true,
+          message,
+          count: totalFixtures,
+        };
+      } catch (error) {
+        console.error('❌ syncAll error:', error);
+        return {
+          success: false,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          count: null,
+        };
+      }
+    },
+  })
+);
+
+// Get sync status (last sync time, fixture counts, etc.)
+builder.queryField('syncStatus', (t) =>
+  t.field({
+    type: builder.objectType('SyncStatus', {
+      fields: (t) => ({
+        lastFixtureUpdate: t.field({ type: 'DateTime', nullable: true }),
+        totalFixtures: t.int(),
+        totalTeams: t.int(),
+        totalLeagues: t.int(),
+        fixturesLast24h: t.int(),
+      }),
+    }),
+    resolve: async (_parent, _args, ctx) => {
+      const [fixtureCount, teamCount, leagueCount, recentFixture, last24hCount] = await Promise.all([
+        ctx.prisma.fixture.count(),
+        ctx.prisma.team.count(),
+        ctx.prisma.league.count(),
+        ctx.prisma.fixture.findFirst({ orderBy: { date: 'desc' } }),
+        ctx.prisma.fixture.count({
+          where: {
+            date: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+          },
+        }),
+      ]);
+
+      return {
+        lastFixtureUpdate: recentFixture?.date || null,
+        totalFixtures: fixtureCount,
+        totalTeams: teamCount,
+        totalLeagues: leagueCount,
+        fixturesLast24h: last24hCount,
+      };
+    },
+  })
+);
+
 builder.mutationField('syncLeagues', (t) =>
   t.field({
     type: SyncResult,

@@ -446,9 +446,9 @@ async function syncStandings(leagueId: number, season: number) {
 async function main() {
   console.log('🚀 Starting real data sync from Football API...\n');
 
-  // Premier League = 39, current season = 2024
+  // Premier League = 39, current season = 2025 (2025-26 season)
   const PREMIER_LEAGUE_ID = 39;
-  const SEASON = 2024;
+  const SEASON = 2025;
 
   try {
     // 1. Sync league data
@@ -472,11 +472,11 @@ async function main() {
     console.log(`   - Teams: ${teamCount}`);
     console.log(`   - Fixtures: ${fixtureCount}`);
     
-    // Show upcoming fixtures around Dec 26-28
-    const dec26 = new Date('2024-12-26T00:00:00Z');
-    const dec29 = new Date('2024-12-29T00:00:00Z');
+    // Show fixtures around Dec 26-28
+    const dec26 = new Date('2025-12-26T00:00:00Z');
+    const dec29 = new Date('2025-12-29T00:00:00Z');
     
-    const upcomingFixtures = await prisma.fixture.findMany({
+    const recentFixtures = await prisma.fixture.findMany({
       where: {
         date: {
           gte: dec26,
@@ -490,11 +490,12 @@ async function main() {
       orderBy: { date: 'asc' },
     });
 
-    if (upcomingFixtures.length > 0) {
-      console.log(`\n📅 Fixtures Dec 26-28, 2024:`);
-      for (const f of upcomingFixtures) {
+    if (recentFixtures.length > 0) {
+      console.log(`\n📅 Fixtures Dec 26-28, 2025:`);
+      for (const f of recentFixtures) {
         const date = new Date(f.date).toLocaleString();
-        console.log(`   ${f.homeTeam.name} vs ${f.awayTeam.name} - ${date}`);
+        const score = f.goalsHome !== null ? `${f.goalsHome}-${f.goalsAway}` : 'vs';
+        console.log(`   ${f.homeTeam.name} ${score} ${f.awayTeam.name} - ${date} (${f.statusShort})`);
       }
     }
 
